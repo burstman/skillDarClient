@@ -1,0 +1,7 @@
+# Build artifacts
+*.apk
+fyne-cross/
+
+
+# Icon
+Icon.png.vscode/

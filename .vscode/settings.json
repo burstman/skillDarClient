@@ -1,0 +1,37 @@
+{
+  "makefile.extensionOutputFolder": "./.vscode",
+  "makefile.configureOnOpen": false,
+  "makefile.configureOnEdit": false,
+  "makefile.alwaysPreConfigure": false,
+  "makefile.buildLog": "",
+  "makefile.extensionLog": "",
+  "makefile.loggingLevel": "Normal",
+  "makefile.dryrunSwitches": [],
+  "makefile.additionalCompilerNames": [],
+  "makefile.saveBeforeBuildOrConfigure": true,
+  "makefile.buildBeforeLaunch": false,
+  "makefile.clearOutputBeforeBuild": false,
+  "makefile.launchConfigurations": [],
+  "extensions.ignoreRecommendations": true,
+  "extensions.autoCheckUpdates": false,
+  "debug.onTaskErrors": "showErrors",
+  "debug.openDebug": "neverOpen",
+  "debug.showInStatusBar": "never",
+  "debug.toolBarLocation": "hidden",
+  "go.delveConfig": {
+    "dlvLoadConfig": {
+      "followPointers": false
+    }
+  },
+  "go.enableCodeLens": {
+    "runtest": false
+  },
+  "go.toolsManagement.autoUpdate": false,
+  "bashDebug.showDebugOutput": false,
+  "shellcheck.enable": false,
+  "files.associations": {
+    "*.sh": "shellscript",
+    "Makefile": "makefile"
+  },
+  "debug.allowBreakpointsEverywhere": false
+}
