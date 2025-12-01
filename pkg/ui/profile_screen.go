@@ -1,12 +1,13 @@
 package ui
 
 import (
-	"image/color"
-
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+
+	skilltheme "skillDar/pkg/theme"
 )
 
 // CreateProfileScreen builds the profile screen with stats and info cards
@@ -26,7 +27,7 @@ func CreateProfileScreen(state AppState) fyne.CanvasObject {
 	)
 
 	// Profile picture (circular placeholder)
-	profilePic := canvas.NewCircle(color.RGBA{R: 100, G: 150, B: 200, A: 255})
+	profilePic := canvas.NewCircle(theme.PrimaryColor())
 	profilePicContainer := container.NewPadded(profilePic)
 	profilePicContainer.Resize(fyne.NewSize(80, 80))
 
@@ -61,7 +62,7 @@ func CreateProfileScreen(state AppState) fyne.CanvasObject {
 	priceTitle := widget.NewLabel("Per Hour")
 	priceTitle.Alignment = fyne.TextAlignCenter
 
-	priceAmount := canvas.NewText("$80", color.Black)
+	priceAmount := canvas.NewText("$80", theme.Color(skilltheme.ColorNameHighlight))
 	priceAmount.Alignment = fyne.TextAlignCenter
 	priceAmount.TextSize = 24
 	priceAmount.TextStyle = fyne.TextStyle{Bold: true}
@@ -70,7 +71,7 @@ func CreateProfileScreen(state AppState) fyne.CanvasObject {
 	priceNote.Alignment = fyne.TextAlignCenter
 
 	priceContent := container.NewVBox(priceTitle, priceAmount, priceNote)
-	priceBackground := canvas.NewRectangle(color.RGBA{R: 255, G: 248, B: 220, A: 255})
+	priceBackground := canvas.NewRectangle(theme.Color(skilltheme.ColorNameHighlight))
 	priceCard := container.NewStack(priceBackground, container.NewPadded(priceContent))
 
 	// Tabs

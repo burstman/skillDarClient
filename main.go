@@ -144,6 +144,26 @@ func (as *AppState) GetUserRole() string {
 	return as.userRole
 }
 
+// initializeIcons creates and returns the map of all app icons
+func initializeIcons() map[string]fyne.Resource {
+	return map[string]fyne.Resource{
+		"lightTheme":        resourceThemeLightlPng,
+		"darkTheme":         resourceDarckThemePng,
+		"client":            resourceClientJpg,
+		"logoImage":         resourceSkillDarLogoPng,
+		"plumbing":          resourcePlumberIcoPng,
+		"electricity":       resourceElectricienIcoPng,
+		"painting":          resourcePaintingIcoPng,
+		"acFixing":          resourceACrepairePng,
+		"homeCleaning":      resourceHomeCleaningPng,
+		"smallRepairs":      resourceSmallrepairehandymanPng,
+		"furnitureAssembly": resourceFurnitureassemblyPng,
+		"waterLeakage":      resourceWaterleakagePng,
+		"applianceRepair":   resourceAppliancerepairePng,
+		"locksmith":         resourceLocksmithPng,
+	}
+}
+
 func main() {
 	// Create the app
 	a := app.New()
@@ -157,23 +177,8 @@ func main() {
 		window:      w,
 		isDarkTheme: false, // Start with LIGHT theme
 		screens:     make(map[string]fyne.CanvasObject),
-		icons: map[string]fyne.Resource{
-			"lightTheme":        resourceThemeLightlPng,
-			"darkTheme":         resourceDarckThemePng,
-			"client":            resourceClientJpg,
-			"logoImage":         resourceSkillDarLogoPng,
-			"plumbing":          resourcePlumberIcoPng,
-			"electricity":       resourceElectricienIcoPng,
-			"painting":          resourcePaintingIcoPng,
-			"acFixing":          resourceACrepairePng,
-			"homeCleaning":      resourceHomeCleaningPng,
-			"smallRepairs":      resourceSmallrepairehandymanPng,
-			"furnitureAssembly": resourceFurnitureassemblyPng,
-			"waterLeakage":      resourceWaterleakagePng,
-			"applianceRepair":   resourceAppliancerepairePng,
-			"locksmith":         resourceLocksmithPng,
-		},
-		userRole: "client", // Default to client role
+		icons:       initializeIcons(),
+		userRole:    "client", // Default to client role
 	}
 
 	// Set initial theme

@@ -7,7 +7,10 @@ import (
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+
+	skilltheme "skillDar/pkg/theme"
 )
 
 // WorkerProfile represents a worker's profile data
@@ -28,7 +31,7 @@ type WorkerProfile struct {
 // CreateWorkerProfileScreen builds a detailed worker profile screen
 func CreateWorkerProfileScreen(state AppState, worker WorkerProfile) fyne.CanvasObject {
 	// Create blue header background
-	headerBg := canvas.NewRectangle(color.RGBA{R: 0x28, G: 0x7D, B: 0xF7, A: 0xFF})
+	headerBg := canvas.NewRectangle(theme.PrimaryColor())
 	headerBg.SetMinSize(fyne.NewSize(0, 220))
 
 	// Back button
@@ -44,26 +47,26 @@ func CreateWorkerProfileScreen(state AppState, worker WorkerProfile) fyne.Canvas
 	topBar := container.NewBorder(nil, nil, backBtn, verifiedBadge)
 
 	// Profile picture (circular)
-	profileCircle := canvas.NewCircle(color.RGBA{R: 255, G: 200, B: 100, A: 255})
-	profileCircle.StrokeColor = color.White
+	profileCircle := canvas.NewCircle(theme.Color(skilltheme.ColorNameHighlight))
+	profileCircle.StrokeColor = theme.BackgroundColor()
 	profileCircle.StrokeWidth = 4
 
 	profilePicContainer := container.NewStack(profileCircle)
 	profilePicContainer.Resize(fyne.NewSize(100, 100))
 
 	// Worker name
-	nameLabel := canvas.NewText(worker.Name, color.White)
+	nameLabel := canvas.NewText(worker.Name, theme.BackgroundColor())
 	nameLabel.Alignment = fyne.TextAlignCenter
 	nameLabel.TextSize = 20
 	nameLabel.TextStyle = fyne.TextStyle{Bold: true}
 
 	// Profession
-	professionLabel := canvas.NewText(worker.Profession, color.RGBA{R: 200, G: 220, B: 255, A: 255})
+	professionLabel := canvas.NewText(worker.Profession, theme.BackgroundColor())
 	professionLabel.Alignment = fyne.TextAlignCenter
 	professionLabel.TextSize = 14
 
 	// Rating and distance info
-	ratingText := canvas.NewText("⭐ 4.9  (127 reviews)  📍 0.8 km", color.White)
+	ratingText := canvas.NewText("⭐ 4.9  (127 reviews)  📍 0.8 km", theme.BackgroundColor())
 	ratingText.Alignment = fyne.TextAlignCenter
 	ratingText.TextSize = 12
 
@@ -92,9 +95,9 @@ func CreateWorkerProfileScreen(state AppState, worker WorkerProfile) fyne.Canvas
 	)
 
 	// Action buttons
-	callBtn := createRoundActionButton("📞", "Call", color.White)
-	chatBtn := createRoundActionButton("💬", "Chat", color.White)
-	hireBtn := createRoundActionButton("📅", "Hire", color.RGBA{R: 0x28, G: 0x7D, B: 0xF7, A: 0xFF})
+	callBtn := createRoundActionButton("📞", "Call", theme.BackgroundColor())
+	chatBtn := createRoundActionButton("💬", "Chat", theme.BackgroundColor())
+	hireBtn := createRoundActionButton("📅", "Hire", theme.PrimaryColor())
 
 	actionsRow := container.NewGridWithColumns(3, callBtn, chatBtn, hireBtn)
 
@@ -168,7 +171,7 @@ func createStatCard2(icon, value, label string) fyne.CanvasObject {
 		textLabel,
 	)
 
-	bg := canvas.NewRectangle(color.RGBA{R: 250, G: 250, B: 250, A: 255})
+	bg := canvas.NewRectangle(theme.BackgroundColor())
 
 	card := container.NewStack(bg, container.NewPadded(content))
 	return card
@@ -205,7 +208,7 @@ func createPriceCard(hourlyRate int) fyne.CanvasObject {
 	priceTitle.Alignment = fyne.TextAlignCenter
 
 	// Large price display
-	priceText := canvas.NewText("TND 180", color.Black)
+	priceText := canvas.NewText("TND 180", theme.ForegroundColor())
 	priceText.Alignment = fyne.TextAlignCenter
 	priceText.TextSize = 28
 	priceText.TextStyle = fyne.TextStyle{Bold: true}
@@ -224,7 +227,7 @@ func createPriceCard(hourlyRate int) fyne.CanvasObject {
 	)
 
 	// Light beige/yellow background
-	bg := canvas.NewRectangle(color.RGBA{R: 255, G: 248, B: 230, A: 255})
+	bg := canvas.NewRectangle(theme.Color(skilltheme.ColorNameHighlight))
 
 	return container.NewStack(bg, container.NewPadded(content))
 }
@@ -237,7 +240,7 @@ func createTab(label string, active bool) fyne.CanvasObject {
 	if active {
 		tabLabel.TextStyle = fyne.TextStyle{Bold: true}
 		// Add underline indicator
-		underline := canvas.NewRectangle(color.RGBA{R: 0x28, G: 0x7D, B: 0xF7, A: 0xFF})
+		underline := canvas.NewRectangle(theme.PrimaryColor())
 		underline.SetMinSize(fyne.NewSize(0, 2))
 
 		return container.NewBorder(nil, underline, nil, nil, container.NewPadded(tabLabel))
