@@ -133,9 +133,9 @@ func createClientHomeContent(state AppState) fyne.CanvasObject {
 	applianceCard := createCategoryButton(state, "applianceRepair", "Appliance Repair")
 	locksmithCard := createCategoryButton(state, "locksmith", "Locksmiths")
 
-	// Use GridWrap with increased size to fit text properly
+	// Use GridWrap with compact size for mobile
 	categoriesContainer := container.NewGridWrap(
-		fyne.NewSize(115, 85), // button size
+		fyne.NewSize(85, 85), // Smaller button size for mobile
 		plumbingCard, electricityCard, paintingCard,
 		acFixingCard, homeCleaningCard, smallRepairsCard,
 		furnitureCard, waterLeakCard, applianceCard,
@@ -143,12 +143,12 @@ func createClientHomeContent(state AppState) fyne.CanvasObject {
 	)
 
 	// Available workers
-	workersLabel := widget.NewLabel("Available Workers")
+	workersLabel := widget.NewLabel("Available Workers Near You (8)")
 	workersLabel.TextStyle = fyne.TextStyle{Bold: true}
 
-	worker1 := createSimpleWorkerCard("Mohamed Hassan", "Plumber", "4.9", "0.8 km", "80 EGP/hr", true)
-	worker2 := createSimpleWorkerCard("Karim Fathy", "Electrician", "4.5", "1.2 km", "75 EGP/hr", true)
-	worker3 := createSimpleWorkerCard("Ahmed Ali", "Carpenter", "4.8", "2.1 km", "90 EGP/hr", false)
+	worker1 := createSimpleWorkerCard(state, "Mohamed Hassan", "Plumber", "4.9", "0.8 km", "127", "180 TND/hr", true)
+	worker2 := createSimpleWorkerCard(state, "Ahmed El-Sayed", "Electrician", "4.8", "1.2 km", "98", "200 TND/hr", true)
+	worker3 := createSimpleWorkerCard(state, "Hossam Abid", "Tall", "4.5", "2.1 km", "55", "150 TND/hr", false)
 
 	return container.NewVBox(
 		title,
@@ -196,49 +196,77 @@ func createChatContent(state AppState) fyne.CanvasObject {
 	)
 }
 
-// createSimpleWorkerCard creates a worker card for clients (simplified version)
-func createSimpleWorkerCard(name, profession, rating, distance, price string, available bool) fyne.CanvasObject {
+// createSimpleWorkerCard creates a clickable worker card for clients
+func createSimpleWorkerCard(state AppState, name, profession, rating, distance, reviewCount, price string, available bool) fyne.CanvasObject {
+	// Profile picture placeholder
+	profileCircle := canvas.NewCircle(color.RGBA{R: 255, G: 200, B: 100, A: 255})
+	profilePic := container.NewStack(profileCircle)
+	profilePic.Resize(fyne.NewSize(50, 50))
+
 	nameLabel := widget.NewLabel(name)
 	nameLabel.TextStyle = fyne.TextStyle{Bold: true}
+
+	// Verified badge
+	verifiedLabel := widget.NewLabel("✓ Verified")
+	verifiedBadge := container.NewHBox(
+		widget.NewLabel(name),
+		verifiedLabel,
+	)
 
 	professionLabel := widget.NewLabel(profession)
 
 	ratingLabel := widget.NewLabel("⭐ " + rating)
+	reviewLabel := widget.NewLabel("(" + reviewCount + ")")
 	distanceLabel := widget.NewLabel("📍 " + distance)
 
 	priceLabel := widget.NewLabel(price)
+	priceLabel.TextStyle = fyne.TextStyle{Bold: true}
 
 	statusLabel := widget.NewLabel("✅ Available")
+	statusLabel.Importance = widget.SuccessImportance
 	if !available {
 		statusLabel.Text = "⏰ Busy"
-	}
-
-	contactBtn := widget.NewButton("Contact", func() {
-		// Handle contact worker
-	})
-	if available {
-		contactBtn.Importance = widget.SuccessImportance
+		statusLabel.Importance = widget.WarningImportance
 	}
 
 	info := container.NewVBox(
-		nameLabel,
+		verifiedBadge,
 		professionLabel,
-		container.NewHBox(ratingLabel, distanceLabel),
+		container.NewHBox(ratingLabel, reviewLabel, distanceLabel),
 	)
 
 	rightSide := container.NewVBox(
 		priceLabel,
 		statusLabel,
-		contactBtn,
 	)
 
 	cardContent := container.NewBorder(
 		nil, nil,
-		info,
+		container.NewHBox(profilePic, info),
 		rightSide,
 	)
 
-	return container.NewPadded(cardContent)
+	// Create a button that wraps the content
+	btn := widget.NewButton("", func() {
+		// Create worker profile and show screen
+		worker := WorkerProfile{
+			Name:            name,
+			Profession:      profession,
+			Rating:          4.9,
+			ReviewCount:     127,
+			Distance:        distance,
+			HourlyRate:      180,
+			CompletedJobs:   340,
+			YearsExperience: 12,
+			Available:       available,
+			About:           "Professional installation and maintenance of electrical wiring, fixtures, and appliances.",
+			Skills:          []string{"Plumbing", "Repair", "Installation"},
+		}
+		state.ShowWorkerProfile(worker)
+	})
+
+	// Stack content on button with minimal padding
+	return container.NewStack(btn, cardContent)
 }
 
 // createCategoryButton creates a clickable category button with icon image

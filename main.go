@@ -24,6 +24,7 @@ type AppState struct {
 	icons         map[string]fyne.Resource // Map of all app icons
 	userRole      string                   // "client" or "worker"
 	screenHistory []string                 // Navigation history
+	currentWorker *uiscreen.WorkerProfile  // Current worker being viewed
 }
 
 // ShowScreen displays a screen by name with the top bar
@@ -44,6 +45,23 @@ func (as *AppState) ShowScreen(screenName string) {
 		)
 		as.window.SetContent(layout)
 	}
+}
+
+// ShowWorkerProfile displays a worker's profile screen
+func (as *AppState) ShowWorkerProfile(worker uiscreen.WorkerProfile) {
+	as.currentWorker = &worker
+
+	// Create the worker profile screen
+	profileScreen := uiscreen.CreateWorkerProfileScreen(as, worker)
+
+	// Add to history
+	screenName := "worker_profile"
+	if len(as.screenHistory) == 0 || as.screenHistory[len(as.screenHistory)-1] != screenName {
+		as.screenHistory = append(as.screenHistory, screenName)
+	}
+
+	// Show without top bar (profile has its own header)
+	as.window.SetContent(profileScreen)
 }
 
 // createTopBar builds the top navigation bar with back button and theme toggle
