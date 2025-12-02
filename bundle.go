@@ -29,6 +29,13 @@ var resourceSkillDarLogoPng = &fyne.StaticResource{
 	StaticContent: resourceSkillDarLogoPngData,
 }
 
+//go:embed assets/activer.png
+var resourceActiverPngData []byte
+var resourceActiverPng = &fyne.StaticResource{
+	StaticName:    "assets/activer.png",
+	StaticContent: resourceActiverPngData,
+}
+
 //go:embed assets/appliance_repaire.png
 var resourceAppliancerepairePngData []byte
 var resourceAppliancerepairePng = &fyne.StaticResource{
@@ -36,18 +43,11 @@ var resourceAppliancerepairePng = &fyne.StaticResource{
 	StaticContent: resourceAppliancerepairePngData,
 }
 
-//go:embed assets/client.jpg
-var resourceClientJpgData []byte
-var resourceClientJpg = &fyne.StaticResource{
-	StaticName:    "assets/client.jpg",
-	StaticContent: resourceClientJpgData,
-}
-
-//go:embed assets/darck-theme.png
-var resourceDarckThemePngData []byte
-var resourceDarckThemePng = &fyne.StaticResource{
-	StaticName:    "assets/darck-theme.png",
-	StaticContent: resourceDarckThemePngData,
+//go:embed assets/deactivate.png
+var resourceDeactivatePngData []byte
+var resourceDeactivatePng = &fyne.StaticResource{
+	StaticName:    "assets/deactivate.png",
+	StaticContent: resourceDeactivatePngData,
 }
 
 //go:embed assets/electricienIco.png
@@ -90,13 +90,6 @@ var resourceSmallrepairehandymanPngData []byte
 var resourceSmallrepairehandymanPng = &fyne.StaticResource{
 	StaticName:    "assets/small_repaire_handyman.png",
 	StaticContent: resourceSmallrepairehandymanPngData,
-}
-
-//go:embed assets/theme-lightl.png
-var resourceThemeLightlPngData []byte
-var resourceThemeLightlPng = &fyne.StaticResource{
-	StaticName:    "assets/theme-lightl.png",
-	StaticContent: resourceThemeLightlPngData,
 }
 
 //go:embed assets/water_leakage.png

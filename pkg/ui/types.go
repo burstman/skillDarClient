@@ -10,4 +10,7 @@ type AppState interface {
 	GetImage(name string) fyne.Resource
 	SetUserRole(role string)
 	GetUserRole() string
+	ToggleTheme()
+	GetThemeIcon() fyne.Resource
+	IsDarkTheme() bool
 }

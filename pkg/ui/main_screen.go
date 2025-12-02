@@ -38,100 +38,69 @@ func createBottomNavigationBar(state AppState, contentContainer *fyne.Container)
 	// Create a theme-aware navbar background from theme package
 	navBg := skilltheme.NewThemedNavBar()
 
-	// Declare button variables (needed for cross-referencing in callbacks)
-	var homeBtn, ordersBtn, chatBtn, profileBtn *widget.Button
+	// Create navigation buttons using custom NavButton
+	homeBtn := skilltheme.NewNavButton("🏠\nHome", true, nil)
+	ordersBtn := skilltheme.NewNavButton("📋\nOrders", false, nil)
+	chatBtn := skilltheme.NewNavButton("💬\nChat", false, nil)
+	profileBtn := skilltheme.NewNavButton("👤\nProfile", false, nil)
 
-	// Create navigation buttons with content
-	homeBtn, homeContent := createNavButton("🏠", "Home", true, func() {
-		// Update all buttons
-		updateNavButton(homeBtn, true)
-		updateNavButton(ordersBtn, false)
-		updateNavButton(chatBtn, false)
-		updateNavButton(profileBtn, false)
-		// Update content
+	// Set up button tap handlers
+	homeBtn.OnTapped = func() {
+		homeBtn.SetActive(true)
+		ordersBtn.SetActive(false)
+		chatBtn.SetActive(false)
+		profileBtn.SetActive(false)
 		contentContainer.Objects = []fyne.CanvasObject{createClientHomeContent(state)}
 		contentContainer.Refresh()
-	})
+	}
 
-	ordersBtn, ordersContent := createNavButton("📋", "Orders", false, func() {
-		updateNavButton(homeBtn, false)
-		updateNavButton(ordersBtn, true)
-		updateNavButton(chatBtn, false)
-		updateNavButton(profileBtn, false)
+	ordersBtn.OnTapped = func() {
+		homeBtn.SetActive(false)
+		ordersBtn.SetActive(true)
+		chatBtn.SetActive(false)
+		profileBtn.SetActive(false)
 		contentContainer.Objects = []fyne.CanvasObject{createOrdersContent(state)}
 		contentContainer.Refresh()
-	})
+	}
 
-	chatBtn, chatContent := createNavButton("💬", "Chat", false, func() {
-		updateNavButton(homeBtn, false)
-		updateNavButton(ordersBtn, false)
-		updateNavButton(chatBtn, true)
-		updateNavButton(profileBtn, false)
+	chatBtn.OnTapped = func() {
+		homeBtn.SetActive(false)
+		ordersBtn.SetActive(false)
+		chatBtn.SetActive(true)
+		profileBtn.SetActive(false)
 		contentContainer.Objects = []fyne.CanvasObject{createChatContent(state)}
 		contentContainer.Refresh()
-	})
+	}
 
-	profileBtn, profileContent := createNavButton("👤", "Profile", false, func() {
-		updateNavButton(homeBtn, false)
-		updateNavButton(ordersBtn, false)
-		updateNavButton(chatBtn, false)
-		updateNavButton(profileBtn, true)
+	profileBtn.OnTapped = func() {
+		homeBtn.SetActive(false)
+		ordersBtn.SetActive(false)
+		chatBtn.SetActive(false)
+		profileBtn.SetActive(true)
 		contentContainer.Objects = []fyne.CanvasObject{createProfileContent(state)}
 		contentContainer.Refresh()
-	})
+	}
 
+	// Create navigation bar layout
 	navItems := container.NewHBox(
 		layout.NewSpacer(),
-		container.NewStack(homeBtn, homeContent),
+		homeBtn,
 		layout.NewSpacer(),
-		container.NewStack(ordersBtn, ordersContent),
+		ordersBtn,
 		layout.NewSpacer(),
-		container.NewStack(chatBtn, chatContent),
+		chatBtn,
 		layout.NewSpacer(),
-		container.NewStack(profileBtn, profileContent),
+		profileBtn,
 		layout.NewSpacer(),
 	)
 
-	return container.NewStack(
-		navBg,
-		container.NewPadded(navItems),
-	)
-}
+	// Stack the background and items
+	navBarContent := container.NewStack(navBg, navItems)
 
-// createNavButton creates a navigation button similar to category buttons
-func createNavButton(icon, label string, active bool, onTap func()) (*widget.Button, fyne.CanvasObject) {
-	iconLabel := widget.NewLabel(icon)
-	iconLabel.Alignment = fyne.TextAlignCenter
+	// Wrap in a fixed height container (adjust the height value as needed)
+	fixedNav := skilltheme.NewFixedHeightContainer(40, navBarContent) // Change 50 to your desired height
 
-	textLabel := widget.NewLabel(label)
-	textLabel.Alignment = fyne.TextAlignCenter
-
-	content := container.NewVBox(
-		iconLabel,
-		textLabel,
-	)
-
-	// Create button
-	btn := widget.NewButton("", onTap)
-
-	// Set importance based on active state
-	if active {
-		btn.Importance = widget.HighImportance // Blue background like category buttons
-	} else {
-		btn.Importance = widget.LowImportance // Transparent like category buttons
-	}
-
-	return btn, content
-}
-
-// updateNavButton updates button importance (active/inactive state)
-func updateNavButton(btn *widget.Button, active bool) {
-	if active {
-		btn.Importance = widget.HighImportance // Blue background
-	} else {
-		btn.Importance = widget.LowImportance // Transparent
-	}
-	btn.Refresh()
+	return fixedNav
 }
 
 // createClientHomeContent creates the home content for clients
@@ -241,41 +210,64 @@ func createProfileContent(state AppState) fyne.CanvasObject {
 	// User info
 	nameLabel := widget.NewLabel("John Doe")
 	nameLabel.TextStyle = fyne.TextStyle{Bold: true}
-	nameLabel.Alignment = fyne.TextAlignCenter
+	nameLabel.Alignment = fyne.TextAlignLeading
 
 	emailLabel := widget.NewLabel("john.doe@example.com")
-	emailLabel.Alignment = fyne.TextAlignCenter
+	emailLabel.Alignment = fyne.TextAlignLeading
 
 	phoneLabel := widget.NewLabel("+216 12 345 678")
-	phoneLabel.Alignment = fyne.TextAlignCenter
+	phoneLabel.Alignment = fyne.TextAlignLeading
 
 	// Edit profile button
 	editBtn := widget.NewButton("Edit Profile", func() {
 		state.ShowScreen("edit_profile_client")
 	})
 	editBtn.Importance = widget.HighImportance
+	editBtn.Alignment = widget.ButtonAlignLeading
 
 	// Settings options
 	settingsLabel := widget.NewLabel("Settings")
 	settingsLabel.TextStyle = fyne.TextStyle{Bold: true}
+	settingsLabel.Alignment = fyne.TextAlignLeading
 
+	// Theme toggle with custom icons (dynamic button)
+	var themeToggle *widget.Button
+	updateThemeButton := func() {
+		if state.IsDarkTheme() {
+			themeToggle.SetText("Light Mode")
+			themeToggle.SetIcon(state.GetImage("lightTheme"))
+			themeToggle.Alignment = widget.ButtonAlignLeading
+		} else {
+			themeToggle.SetText("Dark Mode")
+			themeToggle.SetIcon(state.GetImage("darkTheme"))
+			themeToggle.Alignment = widget.ButtonAlignLeading
+		}
+	}
+
+	themeToggle = widget.NewButtonWithIcon("Dark Mode", state.GetImage("darkTheme"), func() {
+		state.ToggleTheme()
+		updateThemeButton()
+	})
+	themeToggle.Alignment = widget.ButtonAlignLeading
 	notificationsBtn := widget.NewButton("Notifications", func() {
 		fmt.Println("Notifications clicked")
 	})
-
+	notificationsBtn.Alignment = widget.ButtonAlignLeading
 	languageBtn := widget.NewButton("Language", func() {
 		fmt.Println("Language clicked")
 	})
+	languageBtn.Alignment = widget.ButtonAlignLeading
 
 	helpBtn := widget.NewButton("Help & Support", func() {
 		fmt.Println("Help clicked")
 	})
+	helpBtn.Alignment = widget.ButtonAlignLeading
 
 	logoutBtn := widget.NewButton("Logout", func() {
 		fmt.Println("Logout clicked")
 	})
 	logoutBtn.Importance = widget.DangerImportance
-
+	logoutBtn.Alignment = widget.ButtonAlignLeading
 	return container.NewVBox(
 		title,
 		profilePic,
@@ -286,6 +278,7 @@ func createProfileContent(state AppState) fyne.CanvasObject {
 		editBtn,
 		layout.NewSpacer(),
 		settingsLabel,
+		themeToggle,
 		notificationsBtn,
 		languageBtn,
 		helpBtn,

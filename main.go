@@ -64,7 +64,7 @@ func (as *AppState) ShowWorkerProfile(worker uiscreen.WorkerProfile) {
 	as.window.SetContent(profileScreen)
 }
 
-// createTopBar builds the top navigation bar with back button and theme toggle
+// createTopBar builds the top navigation bar with back button only
 func (as *AppState) createTopBar() *fyne.Container {
 	// Back button (only show if there's history)
 	var backBtn *widget.Button
@@ -78,18 +78,11 @@ func (as *AppState) createTopBar() *fyne.Container {
 		backBtn.Disable()
 	}
 
-	// Theme toggle button
-	var themeBtn *widget.Button
-	themeBtn = widget.NewButtonWithIcon("", as.icons["darkTheme"], func() {
-		as.toggleTheme()
-		themeBtn.SetIcon(as.getThemeIcon())
-	})
-
 	return container.NewBorder(
 		nil, nil,
-		backBtn,  // Left
-		themeBtn, // Right
-		nil,      // Center
+		backBtn, // Left
+		nil,     // Right (theme toggle moved to profile screen)
+		nil,     // Center
 	)
 }
 
@@ -108,7 +101,7 @@ func (as *AppState) goBack() {
 }
 
 // toggleTheme switches between light and dark theme
-func (as *AppState) toggleTheme() {
+func (as *AppState) ToggleTheme() {
 	as.isDarkTheme = !as.isDarkTheme
 	fmt.Println("Theme toggled. isDarkTheme:", as.isDarkTheme)
 
@@ -121,11 +114,16 @@ func (as *AppState) toggleTheme() {
 }
 
 // getThemeIcon returns the appropriate icon for current theme
-func (as *AppState) getThemeIcon() fyne.Resource {
+func (as *AppState) GetThemeIcon() fyne.Resource {
 	if as.isDarkTheme {
 		return as.icons["lightTheme"]
 	}
 	return as.icons["darkTheme"]
+}
+
+// IsDarkTheme returns whether dark theme is currently active
+func (as *AppState) IsDarkTheme() bool {
+	return as.isDarkTheme
 }
 
 // GetImage returns an image resource by name
@@ -147,9 +145,8 @@ func (as *AppState) GetUserRole() string {
 // initializeIcons creates and returns the map of all app icons
 func initializeIcons() map[string]fyne.Resource {
 	return map[string]fyne.Resource{
-		"lightTheme":        resourceThemeLightlPng,
-		"darkTheme":         resourceDarckThemePng,
-		"client":            resourceClientJpg,
+		"lightTheme":        resourceActiverPng,    // Light theme = active/on icon
+		"darkTheme":         resourceDeactivatePng, // Dark theme = deactivate/off icon
 		"logoImage":         resourceSkillDarLogoPng,
 		"plumbing":          resourcePlumberIcoPng,
 		"electricity":       resourceElectricienIcoPng,

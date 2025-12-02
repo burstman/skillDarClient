@@ -35,7 +35,8 @@ func (r *themedNavBarRenderer) Layout(size fyne.Size) {
 }
 
 func (r *themedNavBarRenderer) MinSize() fyne.Size {
-	return fyne.NewSize(0, 0)
+	// Set a fixed height for the navigation bar
+	return fyne.NewSize(0, 10) // Match the height set in main_screen.go
 }
 
 func (r *themedNavBarRenderer) Refresh() {
