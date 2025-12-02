@@ -56,11 +56,6 @@ func CreateEditProfileClientScreen(state AppState) fyne.CanvasObject {
 	})
 	saveBtn.Importance = widget.HighImportance
 
-	// Cancel button
-	cancelBtn := widget.NewButton("Cancel", func() {
-		state.ShowScreen("main")
-	})
-
 	// Layout
 	content := container.NewVBox(
 		title,
@@ -75,7 +70,6 @@ func CreateEditProfileClientScreen(state AppState) fyne.CanvasObject {
 		bioEntry,
 		layout.NewSpacer(),
 		saveBtn,
-		cancelBtn,
 	)
 
 	scroll := container.NewVScroll(content)
