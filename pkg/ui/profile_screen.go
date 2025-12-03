@@ -27,7 +27,7 @@ func CreateProfileScreen(state AppState) fyne.CanvasObject {
 	)
 
 	// Profile picture (circular placeholder)
-	profilePic := canvas.NewCircle(theme.PrimaryColor())
+	profilePic := canvas.NewCircle(theme.Color(theme.ColorNamePrimary))
 	profilePicContainer := container.NewPadded(profilePic)
 	profilePicContainer.Resize(fyne.NewSize(80, 80))
 
@@ -50,13 +50,24 @@ func CreateProfileScreen(state AppState) fyne.CanvasObject {
 
 	statsRow := container.NewGridWithColumns(3, stat1, stat2, stat3)
 
-	// Action buttons
-	callBtn := createActionButton("📞", "Call")
-	chatBtn := createActionButton("💬", "Chat")
-	hireBtn := createActionButton("💼", "Hire")
-	hireBtn.Importance = widget.HighImportance
+	// Action buttons - remove importance to use default text color
+	callBtn := widget.NewButton("📞\nCall", func() {
+		// TODO: Implement action
+	})
 
-	actionsRow := container.NewGridWithColumns(3, callBtn, chatBtn, hireBtn)
+	chatBtn := widget.NewButton("💬\nChat", func() {
+		// TODO: Implement action
+	})
+
+	hireBtn := widget.NewButton("💼\nHire", func() {
+		// TODO: Implement action
+	})
+
+	buttonsGrid := container.NewGridWithColumns(3, callBtn, chatBtn, hireBtn)
+
+	// Use ThemedNavBar as background for buttons
+	navBarBg := skilltheme.NewThemedNavBar()
+	actionsRow := container.NewStack(navBarBg, buttonsGrid)
 
 	// Price card with background
 	priceTitle := widget.NewLabel("Per Hour")
@@ -127,11 +138,4 @@ func createStatCard(icon, number, label string) *fyne.Container {
 
 	card := container.NewVBox(iconLabel, numLabel, textLabel)
 	return container.NewPadded(card)
-}
-
-// createActionButton creates a button with icon and text
-func createActionButton(icon, text string) *widget.Button {
-	return widget.NewButton(icon+" "+text, func() {
-		// TODO: Implement action
-	})
 }

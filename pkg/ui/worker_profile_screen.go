@@ -2,6 +2,7 @@ package ui
 
 import (
 	"image/color"
+	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
@@ -31,7 +32,7 @@ type WorkerProfile struct {
 // CreateWorkerProfileScreen builds a detailed worker profile screen
 func CreateWorkerProfileScreen(state AppState, worker WorkerProfile) fyne.CanvasObject {
 	// Create blue header background
-	headerBg := canvas.NewRectangle(theme.PrimaryColor())
+	headerBg := canvas.NewRectangle(theme.Color(theme.ColorNamePrimary))
 	headerBg.SetMinSize(fyne.NewSize(0, 220))
 
 	// Back button
@@ -48,25 +49,25 @@ func CreateWorkerProfileScreen(state AppState, worker WorkerProfile) fyne.Canvas
 
 	// Profile picture (circular)
 	profileCircle := canvas.NewCircle(theme.Color(skilltheme.ColorNameHighlight))
-	profileCircle.StrokeColor = theme.BackgroundColor()
+	profileCircle.StrokeColor = theme.Color(theme.ColorNameBackground)
 	profileCircle.StrokeWidth = 4
 
 	profilePicContainer := container.NewStack(profileCircle)
 	profilePicContainer.Resize(fyne.NewSize(100, 100))
 
 	// Worker name
-	nameLabel := canvas.NewText(worker.Name, theme.BackgroundColor())
+	nameLabel := canvas.NewText(worker.Name, theme.Color(theme.ColorNameBackground))
 	nameLabel.Alignment = fyne.TextAlignCenter
 	nameLabel.TextSize = 20
 	nameLabel.TextStyle = fyne.TextStyle{Bold: true}
 
 	// Profession
-	professionLabel := canvas.NewText(worker.Profession, theme.BackgroundColor())
+	professionLabel := canvas.NewText(worker.Profession, theme.Color(theme.ColorNameBackground))
 	professionLabel.Alignment = fyne.TextAlignCenter
 	professionLabel.TextSize = 14
 
 	// Rating and distance info
-	ratingText := canvas.NewText("⭐ 4.9  (127 reviews)  📍 0.8 km", theme.BackgroundColor())
+	ratingText := canvas.NewText("⭐ 4.9  (127 reviews)  📍 0.8 km", theme.Color(theme.ColorNameBackground))
 	ratingText.Alignment = fyne.TextAlignCenter
 	ratingText.TextSize = 12
 
@@ -95,9 +96,9 @@ func CreateWorkerProfileScreen(state AppState, worker WorkerProfile) fyne.Canvas
 	)
 
 	// Action buttons
-	callBtn := createRoundActionButton("📞", "Call", theme.BackgroundColor())
-	chatBtn := createRoundActionButton("💬", "Chat", theme.BackgroundColor())
-	hireBtn := createRoundActionButton("📅", "Hire", theme.PrimaryColor())
+	callBtn := createRoundActionButton("📞", "Call", theme.Color(theme.ColorNameBackground))
+	chatBtn := createRoundActionButton("💬", "Chat", theme.Color(theme.ColorNameBackground))
+	hireBtn := createRoundActionButton("📅", "Hire", theme.Color(theme.ColorNameBackground))
 
 	actionsRow := container.NewGridWithColumns(3, callBtn, chatBtn, hireBtn)
 
@@ -171,7 +172,7 @@ func createStatCard2(icon, value, label string) fyne.CanvasObject {
 		textLabel,
 	)
 
-	bg := canvas.NewRectangle(theme.BackgroundColor())
+	bg := canvas.NewRectangle(theme.Color(theme.ColorNameBackground))
 
 	card := container.NewStack(bg, container.NewPadded(content))
 	return card
@@ -179,28 +180,114 @@ func createStatCard2(icon, value, label string) fyne.CanvasObject {
 
 // createRoundActionButton creates a rounded action button
 func createRoundActionButton(icon, label string, bgColor color.Color) fyne.CanvasObject {
-	iconLabel := widget.NewLabel(icon)
-	iconLabel.Alignment = fyne.TextAlignCenter
+	// Set text color based on background - white for primary (blue), dark for others
+	var textColor color.Color
+	if bgColor == theme.Color(theme.ColorNamePrimary) {
+		textColor = theme.Color(theme.ColorNameBackground) // White text on blue background
+	} else {
+		textColor = theme.Color(theme.ColorNameForeground) // Dark text on light background
+	}
 
-	textLabel := widget.NewLabel(label)
-	textLabel.Alignment = fyne.TextAlignCenter
+	bg := canvas.NewCircle(bgColor)
 
-	content := container.NewVBox(
-		iconLabel,
-		textLabel,
+	// Create text overlays with proper colors
+	iconText := canvas.NewText(icon, textColor)
+	iconText.Alignment = fyne.TextAlignCenter
+	iconText.TextSize = 20
+
+	labelText := canvas.NewText(label, textColor)
+	labelText.Alignment = fyne.TextAlignCenter
+	labelText.TextSize = 12
+
+	textContent := container.NewVBox(
+		layout.NewSpacer(),
+		container.NewCenter(iconText),
+		container.NewCenter(labelText),
+		layout.NewSpacer(),
 	)
 
-	bg := canvas.NewRectangle(bgColor)
+	card := container.NewStack(bg, textContent)
+	card.Resize(fyne.NewSize(80, 80))
 
-	card := container.NewStack(bg, container.NewPadded(content))
+	// Wrap in a tappable button with animation
+	btn := &tappableContainer{
+		content: card,
+		bg:      bg,
+		bgColor: bgColor,
+		onTap: func() {
+			// Handle action based on label
+			println("===============================")
+			println("BUTTON TAPPED:", label)
+			println("===============================")
+		},
+	}
+	btn.ExtendBaseWidget(btn)
 
-	// Make it tappable
-	btn := widget.NewButton("", func() {
-		// Handle action
-	})
-
-	return container.NewStack(card, btn)
+	return btn
 }
+
+// tappableContainer is a custom widget that makes any content tappable
+type tappableContainer struct {
+	widget.BaseWidget
+	content fyne.CanvasObject
+	bg      *canvas.Circle
+	bgColor color.Color
+	onTap   func()
+}
+
+func (t *tappableContainer) CreateRenderer() fyne.WidgetRenderer {
+	return &tappableRenderer{content: t.content}
+}
+
+func (t *tappableContainer) Tapped(*fyne.PointEvent) {
+	if t.onTap != nil {
+		// Visual feedback: show gray background briefly for all buttons
+		if t.bg != nil {
+			// Save original color
+			originalColor := t.bgColor
+
+			// Use gray for tap feedback (visible in both light and dark themes)
+			tapColor := color.RGBA{R: 180, G: 180, B: 180, A: 255}
+
+			t.bg.FillColor = tapColor
+			canvas.Refresh(t.bg)
+
+			// Restore original color after a short delay
+			go func() {
+				time.Sleep(100 * time.Millisecond)
+				// Use fyne.Do to safely update UI from goroutine
+				fyne.Do(func() {
+					t.bg.FillColor = originalColor
+					canvas.Refresh(t.bg)
+				})
+			}()
+		}
+
+		t.onTap()
+	}
+}
+
+type tappableRenderer struct {
+	content fyne.CanvasObject
+}
+
+func (r *tappableRenderer) Layout(size fyne.Size) {
+	r.content.Resize(size)
+}
+
+func (r *tappableRenderer) MinSize() fyne.Size {
+	return r.content.MinSize()
+}
+
+func (r *tappableRenderer) Refresh() {
+	canvas.Refresh(r.content)
+}
+
+func (r *tappableRenderer) Objects() []fyne.CanvasObject {
+	return []fyne.CanvasObject{r.content}
+}
+
+func (r *tappableRenderer) Destroy() {}
 
 // createPriceCard creates the pricing information card
 func createPriceCard(hourlyRate int) fyne.CanvasObject {
@@ -208,7 +295,7 @@ func createPriceCard(hourlyRate int) fyne.CanvasObject {
 	priceTitle.Alignment = fyne.TextAlignCenter
 
 	// Large price display
-	priceText := canvas.NewText("TND 180", theme.ForegroundColor())
+	priceText := canvas.NewText("TND 180", theme.Color(theme.ColorNameForeground))
 	priceText.Alignment = fyne.TextAlignCenter
 	priceText.TextSize = 28
 	priceText.TextStyle = fyne.TextStyle{Bold: true}
@@ -240,7 +327,7 @@ func createTab(label string, active bool) fyne.CanvasObject {
 	if active {
 		tabLabel.TextStyle = fyne.TextStyle{Bold: true}
 		// Add underline indicator
-		underline := canvas.NewRectangle(theme.PrimaryColor())
+		underline := canvas.NewRectangle(theme.Color(theme.ColorNamePrimary))
 		underline.SetMinSize(fyne.NewSize(0, 2))
 
 		return container.NewBorder(nil, underline, nil, nil, container.NewPadded(tabLabel))

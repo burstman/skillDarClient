@@ -66,16 +66,28 @@ func (as *AppState) ShowWorkerProfile(worker uiscreen.WorkerProfile) {
 
 // createTopBar builds the top navigation bar with back button only
 func (as *AppState) createTopBar() *fyne.Container {
-	// Back button (only show if there's history)
+	// Back button (only show if we're past the main screen)
 	var backBtn *widget.Button
-	if len(as.screenHistory) > 1 {
+	currentScreen := ""
+	if len(as.screenHistory) > 0 {
+		currentScreen = as.screenHistory[len(as.screenHistory)-1]
+	}
+
+	// Show back button only if we're past the main screen (not on welcome, login, or main)
+	showBackButton := len(as.screenHistory) > 1 &&
+		currentScreen != "welcome" &&
+		currentScreen != "login" &&
+		currentScreen != "main"
+
+	if showBackButton {
 		backBtn = widget.NewButton("←", func() {
 			as.goBack()
 		})
 	} else {
-		// Empty placeholder if no history
+		// Empty placeholder if no back button needed
 		backBtn = widget.NewButton("", nil)
 		backBtn.Disable()
+		backBtn.Hide() // Hide it completely
 	}
 
 	return container.NewBorder(
