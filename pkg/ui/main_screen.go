@@ -134,7 +134,7 @@ func createClientHomeContent(state AppState) fyne.CanvasObject {
 	locksmithCard := createCategoryButton(state, "locksmith", "Locksmiths")
 
 	// Use GridWrap with compact size for mobile
-	categoriesContainer := container.NewGridWrap(
+	categoriesGrid := container.NewGridWrap(
 		fyne.NewSize(85, 85), // Smaller button size for mobile
 		plumbingCard, electricityCard, paintingCard,
 		acFixingCard, homeCleaningCard, smallRepairsCard,
@@ -142,24 +142,104 @@ func createClientHomeContent(state AppState) fyne.CanvasObject {
 		locksmithCard,
 	)
 
+	// Make categories scrollable in a fixed height container
+	categoriesScroll := container.NewVScroll(categoriesGrid)
+	categoriesScroll.SetMinSize(fyne.NewSize(400, 250)) // Fixed height for categories section
+	categoriesScroll.OnScrolled = func(pos fyne.Position) {
+		fmt.Printf("Categories scrolled to position: X=%.2f, Y=%.2f\n", pos.X, pos.Y)
+	}
+
+	// Separator between sections
+	separator1 := widget.NewSeparator()
+
 	// Available workers
-	workersLabel := widget.NewLabel("Available Workers Near You (8)")
+	workersLabel := widget.NewLabel("Available Workers Near You (5)")
 	workersLabel.TextStyle = fyne.TextStyle{Bold: true}
 
-	worker1 := createSimpleWorkerCard(state, "Mohamed Hassan", "Plumber", "4.9", "0.8 km", "127", "180 TND/hr", true)
-	worker2 := createSimpleWorkerCard(state, "Ahmed El-Sayed", "Electrician", "4.8", "1.2 km", "98", "200 TND/hr", true)
-	worker3 := createSimpleWorkerCard(state, "Hossam Abid", "Tall", "4.5", "2.1 km", "55", "150 TND/hr", false)
+	// Dummy worker data - start with first 5 workers
+	allWorkers := []struct {
+		name       string
+		profession string
+		rating     string
+		distance   string
+		reviews    string
+		price      string
+		available  bool
+	}{
+		{"Mohamed Hassan", "Plumber", "4.9", "0.8 km", "127", "180 TND/hr", true},
+		{"Ahmed El-Sayed", "Electrician", "4.8", "1.2 km", "98", "200 TND/hr", true},
+		{"Hossam Abid", "Painter", "4.5", "2.1 km", "55", "150 TND/hr", false},
+		{"Youssef Mansour", "AC Technician", "4.7", "1.5 km", "89", "190 TND/hr", true},
+		{"Karim Saidi", "Cleaner", "4.6", "0.5 km", "112", "120 TND/hr", true},
+		// Next batch
+		{"Ali Ben Salem", "Plumber", "4.8", "3.2 km", "145", "170 TND/hr", true},
+		{"Sofiane Gharbi", "Electrician", "4.9", "2.8 km", "203", "210 TND/hr", false},
+		{"Mehdi Trabelsi", "Carpenter", "4.7", "1.9 km", "78", "165 TND/hr", true},
+		{"Nabil Chebbi", "Locksmith", "4.6", "2.5 km", "92", "140 TND/hr", true},
+		{"Rami Bouazizi", "Painter", "4.5", "3.0 km", "67", "155 TND/hr", true},
+		// Third batch
+		{"Farid Jelassi", "AC Technician", "4.8", "1.8 km", "134", "195 TND/hr", true},
+		{"Tarek Maatoug", "Plumber", "4.7", "2.2 km", "101", "175 TND/hr", false},
+		{"Walid Hamdi", "Electrician", "4.9", "0.9 km", "187", "205 TND/hr", true},
+		{"Sami Ayari", "Cleaner", "4.6", "1.7 km", "88", "125 TND/hr", true},
+		{"Bassem Jribi", "Carpenter", "4.5", "3.5 km", "72", "160 TND/hr", true},
+	}
 
-	return container.NewVBox(
+	currentDisplayCount := 5
+	isLoading := false
+
+	// Workers container - start with first 5
+	workersContainer := container.NewVBox()
+	for i := 0; i < currentDisplayCount && i < len(allWorkers); i++ {
+		w := allWorkers[i]
+		workersContainer.Add(createSimpleWorkerCard(state, w.name, w.profession, w.rating, w.distance, w.reviews, w.price, w.available))
+	}
+
+	// Make workers scrollable with minimum height
+	workersScroll := container.NewVScroll(workersContainer)
+	workersScroll.SetMinSize(fyne.NewSize(400, 300)) // Give workers section proper height
+	workersScroll.OnScrolled = func(pos fyne.Position) {
+		fmt.Printf("Workers scrolled to position: X=%.2f, Y=%.2f\n", pos.X, pos.Y)
+
+		// Check if we're near the bottom (Y position > 40 means scrolled down significantly)
+		if pos.Y > 40 && !isLoading && currentDisplayCount < len(allWorkers) {
+			isLoading = true
+			fmt.Println(">>> Loading more workers...")
+
+			// Load next 5 workers
+			oldCount := currentDisplayCount
+			currentDisplayCount += 5
+			if currentDisplayCount > len(allWorkers) {
+				currentDisplayCount = len(allWorkers)
+			}
+
+			// Add new workers to container
+			for i := oldCount; i < currentDisplayCount; i++ {
+				w := allWorkers[i]
+				workersContainer.Add(createSimpleWorkerCard(state, w.name, w.profession, w.rating, w.distance, w.reviews, w.price, w.available))
+			}
+
+			// Update label
+			workersLabel.SetText(fmt.Sprintf("Available Workers Near You (%d)", currentDisplayCount))
+			workersContainer.Refresh()
+
+			fmt.Printf(">>> Loaded %d more workers. Total: %d\n", currentDisplayCount-oldCount, currentDisplayCount)
+			isLoading = false
+		}
+	}
+
+	// Combine everything in a VBox
+	content := container.NewVBox(
 		title,
 		searchEntry,
 		categoriesLabel,
-		categoriesContainer,
+		categoriesScroll,
+		separator1,
 		workersLabel,
-		worker1,
-		worker2,
-		worker3,
+		workersScroll,
 	)
+
+	return content
 }
 
 // createOrdersContent creates the orders/bookings content

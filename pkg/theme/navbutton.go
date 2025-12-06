@@ -45,6 +45,7 @@ func (b *NavButton) SetActive(active bool) {
 func (b *NavButton) CreateRenderer() fyne.WidgetRenderer {
 	label := widget.NewLabel(b.Text)
 	label.Alignment = fyne.TextAlignCenter
+	label.TextStyle = fyne.TextStyle{Bold: false}
 
 	content := container.NewCenter(label)
 

@@ -30,8 +30,24 @@ func CreateLoginScreen(state AppState) fyne.CanvasObject {
 		password := passwordEntry.Text
 		if email == "" || password == "" {
 			fmt.Println("Please fill in all fields")
+			state.ShowConnectionError(StatusNoInternet, "Please fill in all fields")
 		} else {
+			// Simulate API call - check connection first
+			apiConfig := DefaultAPIConfig()
+
+			// Example: Check connection before login
+			isConnected, status, message := CheckConnection(apiConfig)
+
+			if !isConnected {
+				// Show connection error
+				state.ShowConnectionError(status, message)
+				return
+			}
+
+			// Simulate successful login
 			fmt.Println("Logged in as:", email)
+			state.HideConnectionError()
+
 			// Navigate to main screen
 			state.ShowScreen("main")
 		}

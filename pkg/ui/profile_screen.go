@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"fmt"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
@@ -85,17 +87,49 @@ func CreateProfileScreen(state AppState) fyne.CanvasObject {
 	priceBackground := canvas.NewRectangle(theme.Color(skilltheme.ColorNameHighlight))
 	priceCard := container.NewStack(priceBackground, container.NewPadded(priceContent))
 
-	// Tabs
-	tab1 := widget.NewLabel("About")
-	tab1.TextStyle = fyne.TextStyle{Bold: true}
-	tab2 := widget.NewLabel("Skills")
-	tab3 := widget.NewLabel("Reviews")
-
-	tabsRow := container.NewGridWithColumns(3, tab1, tab2, tab3)
-
 	// About section
-	aboutText := widget.NewLabel("Professional plumber with 12 years of experience in all plumbing work...")
-	aboutText.Wrapping = fyne.TextWrapWord
+	aboutContent := widget.NewLabel("Professional plumber with 12 years of experience in all plumbing work...")
+	aboutContent.Wrapping = fyne.TextWrapWord
+
+	skillContent := widget.NewLabel("• Pipe Installation\n• Leak Repairs\n• Drain Cleaning\n• Water Heater Services")
+
+	reviewsContent := widget.NewLabel("⭐⭐⭐⭐⭐\n\"Excellent service! Highly recommend.\"\n\n⭐⭐⭐⭐⭐\n\"Very professional and timely.\"")
+
+	tabContentContainer := container.NewStack()
+	switchTab := func(tabIndex int) {
+
+		tabContentContainer.Objects = []fyne.CanvasObject{}
+
+		switch tabIndex {
+		case 0:
+			tabContentContainer.Objects = []fyne.CanvasObject{aboutContent}
+		case 1:
+			tabContentContainer.Objects = []fyne.CanvasObject{skillContent}
+		case 2:
+			tabContentContainer.Objects = []fyne.CanvasObject{reviewsContent}
+		}
+		// Refresh to show new content
+		tabContentContainer.Refresh()
+
+	}
+
+	// Update styling
+	tab1Btn := widget.NewButton("About", func() {
+		fmt.Println("about tab")
+		switchTab(0)
+	})
+	tab2Btn := widget.NewButton("Skills", func() {
+		fmt.Println("skill tab")
+		switchTab(1)
+	})
+	tab3Btn := widget.NewButton("Reviews", func() {
+		fmt.Println("reviews tab")
+		switchTab(2)
+	})
+
+	tabsRow := container.NewGridWithColumns(3, tab1Btn, tab2Btn, tab3Btn)
+
+	switchTab(0) // Default to first tab
 
 	// Available button
 	availableBtn := widget.NewButton("Available Now for Booking", func() {
@@ -115,7 +149,8 @@ func CreateProfileScreen(state AppState) fyne.CanvasObject {
 		actionsRow,
 		priceCard,
 		tabsRow,
-		aboutText,
+		tabContentContainer,
+		//aboutText,
 		availableBtn,
 	)
 

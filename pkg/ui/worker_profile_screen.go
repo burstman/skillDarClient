@@ -33,7 +33,7 @@ type WorkerProfile struct {
 func CreateWorkerProfileScreen(state AppState, worker WorkerProfile) fyne.CanvasObject {
 	// Create blue header background
 	headerBg := canvas.NewRectangle(theme.Color(theme.ColorNamePrimary))
-	headerBg.SetMinSize(fyne.NewSize(0, 220))
+	headerBg.SetMinSize(fyne.NewSize(0, 160))
 
 	// Back button
 	backBtn := widget.NewButton("←", func() {
@@ -53,7 +53,7 @@ func CreateWorkerProfileScreen(state AppState, worker WorkerProfile) fyne.Canvas
 	profileCircle.StrokeWidth = 4
 
 	profilePicContainer := container.NewStack(profileCircle)
-	profilePicContainer.Resize(fyne.NewSize(100, 100))
+	profilePicContainer.Resize(fyne.NewSize(100, 40))
 
 	// Worker name
 	nameLabel := canvas.NewText(worker.Name, theme.Color(theme.ColorNameBackground))
@@ -74,12 +74,12 @@ func CreateWorkerProfileScreen(state AppState, worker WorkerProfile) fyne.Canvas
 	// Header content
 	headerContent := container.NewVBox(
 		topBar,
-		layout.NewSpacer(),
+		//layout.NewSpacer(),
 		container.NewCenter(profilePicContainer),
 		container.NewVBox(nameLabel),
 		container.NewVBox(professionLabel),
 		container.NewVBox(ratingText),
-		layout.NewSpacer(),
+		//layout.NewSpacer(),
 	)
 
 	header := container.NewStack(headerBg, container.NewPadded(headerContent))
@@ -105,14 +105,7 @@ func CreateWorkerProfileScreen(state AppState, worker WorkerProfile) fyne.Canvas
 	// Price section
 	priceCard := createPriceCard(worker.HourlyRate)
 
-	// Tabs
-	aboutTab := createTab("About", true)
-	skillsTab := createTab("Skills", false)
-	reviewsTab := createTab("Reviews", false)
-
-	tabsRow := container.NewGridWithColumns(3, aboutTab, skillsTab, reviewsTab)
-
-	// About section
+	// About section content
 	aboutTitle := widget.NewLabel("Summary")
 	aboutTitle.TextStyle = fyne.TextStyle{Bold: true}
 
@@ -122,11 +115,45 @@ func CreateWorkerProfileScreen(state AppState, worker WorkerProfile) fyne.Canvas
 	description := widget.NewLabel("Professional installation and maintenance of electrical wiring, fixtures, and appliances. Repair services, installation of air conditioners and appliances.")
 	description.Wrapping = fyne.TextWrapWord
 
-	aboutSection := container.NewVBox(
+	aboutContent := container.NewVBox(
 		aboutTitle,
 		aboutText,
 		description,
 	)
+
+	// Skills section content
+	skillsContent := widget.NewLabel("• Electrical Wiring\n• Fixture Installation\n• Appliance Repair\n• Air Conditioner Installation\n• Maintenance Services")
+	skillsContent.Wrapping = fyne.TextWrapWord
+
+	// Reviews section content
+	reviewsContent := widget.NewLabel("⭐⭐⭐⭐⭐\n\"Excellent work! Very professional.\"\n- Ahmed M.\n\n⭐⭐⭐⭐⭐\n\"Fixed my electrical issues quickly.\"\n- Sarah K.")
+	reviewsContent.Wrapping = fyne.TextWrapWord
+
+	// Tab content container
+	tabContentContainer := container.NewStack()
+	switchTab := func(tabIndex int) {
+		tabContentContainer.Objects = []fyne.CanvasObject{}
+
+		switch tabIndex {
+		case 0:
+			tabContentContainer.Objects = []fyne.CanvasObject{aboutContent}
+		case 1:
+			tabContentContainer.Objects = []fyne.CanvasObject{skillsContent}
+		case 2:
+			tabContentContainer.Objects = []fyne.CanvasObject{reviewsContent}
+		}
+		// Refresh to show new content
+		tabContentContainer.Refresh()
+	}
+
+	// Tab buttons
+	tab1Btn := widget.NewButton("About", func() { switchTab(0) })
+	tab2Btn := widget.NewButton("Skills", func() { switchTab(1) })
+	tab3Btn := widget.NewButton("Reviews", func() { switchTab(2) })
+
+	tabsRow := container.NewGridWithColumns(3, tab1Btn, tab2Btn, tab3Btn)
+
+	switchTab(0) // Default to first tab
 
 	// Main content
 	content := container.NewVBox(
@@ -138,7 +165,7 @@ func CreateWorkerProfileScreen(state AppState, worker WorkerProfile) fyne.Canvas
 		widget.NewSeparator(),
 		tabsRow,
 		widget.NewSeparator(),
-		aboutSection,
+		tabContentContainer,
 	)
 
 	// Full layout

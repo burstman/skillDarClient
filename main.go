@@ -17,14 +17,16 @@ import (
 
 // AppState manages navigation and theme across screens
 type AppState struct {
-	app           fyne.App
-	window        fyne.Window
-	isDarkTheme   bool
-	screens       map[string]fyne.CanvasObject
-	icons         map[string]fyne.Resource // Map of all app icons
-	userRole      string                   // "client" or "worker"
-	screenHistory []string                 // Navigation history
-	currentWorker *uiscreen.WorkerProfile  // Current worker being viewed
+	app               fyne.App
+	window            fyne.Window
+	isDarkTheme       bool
+	screens           map[string]fyne.CanvasObject
+	icons             map[string]fyne.Resource    // Map of all app icons
+	userRole          string                      // "client" or "worker"
+	screenHistory     []string                    // Navigation history
+	currentWorker     *uiscreen.WorkerProfile     // Current worker being viewed
+	connectionManager *uiscreen.ConnectionManager // Connection status manager
+	currentContent    *fyne.Container             // Current screen content container
 }
 
 // ShowScreen displays a screen by name with the top bar
@@ -35,13 +37,25 @@ func (as *AppState) ShowScreen(screenName string) {
 			as.screenHistory = append(as.screenHistory, screenName)
 		}
 
-		// Wrap screen with top bar
+		// Create screen content with notification area
+		as.currentContent = container.NewBorder(
+			nil,    // Top
+			nil,    // Bottom
+			nil,    // Left
+			nil,    // Right
+			screen, // Center
+		)
+
+		// Wrap screen with top bar and notification area
 		layout := container.NewBorder(
-			as.createTopBar(), // Top (back button + theme toggle)
+			container.NewVBox(
+				as.connectionManager.GetContainer(), // Connection notifications
+				as.createTopBar(),                   // Top (back button)
+			),
 			nil,               // Bottom
 			nil,               // Left
 			nil,               // Right
-			screen,            // Center (screen content)
+			as.currentContent, // Center (screen content)
 		)
 		as.window.SetContent(layout)
 	}
@@ -60,8 +74,24 @@ func (as *AppState) ShowWorkerProfile(worker uiscreen.WorkerProfile) {
 		as.screenHistory = append(as.screenHistory, screenName)
 	}
 
-	// Show without top bar (profile has its own header)
-	as.window.SetContent(profileScreen)
+	// Create content with notification area
+	as.currentContent = container.NewBorder(
+		nil,           // Top
+		nil,           // Bottom
+		nil,           // Left
+		nil,           // Right
+		profileScreen, // Center
+	)
+
+	// Show with notification area at top
+	layout := container.NewBorder(
+		as.connectionManager.GetContainer(), // Connection notifications
+		nil,                                 // Bottom
+		nil,                                 // Left
+		nil,                                 // Right
+		as.currentContent,                   // Center
+	)
+	as.window.SetContent(layout)
 }
 
 // createTopBar builds the top navigation bar with back button only
@@ -154,6 +184,17 @@ func (as *AppState) GetUserRole() string {
 	return as.userRole
 }
 
+// ShowConnectionError displays a connection error notification
+func (as *AppState) ShowConnectionError(status uiscreen.ConnectionStatus, message string) {
+	// Show notification (manual dismiss required)
+	as.connectionManager.ShowNotification(status, message, 0)
+}
+
+// HideConnectionError hides the connection error notification
+func (as *AppState) HideConnectionError() {
+	as.connectionManager.HideNotification()
+}
+
 // initializeIcons creates and returns the map of all app icons
 func initializeIcons() map[string]fyne.Resource {
 	return map[string]fyne.Resource{
@@ -182,12 +223,13 @@ func main() {
 
 	// Initialize app state
 	state := &AppState{
-		app:         a,
-		window:      w,
-		isDarkTheme: false, // Start with LIGHT theme
-		screens:     make(map[string]fyne.CanvasObject),
-		icons:       initializeIcons(),
-		userRole:    "client", // Default to client role
+		app:               a,
+		window:            w,
+		isDarkTheme:       false, // Start with LIGHT theme
+		screens:           make(map[string]fyne.CanvasObject),
+		icons:             initializeIcons(),
+		userRole:          "client", // Default to client role
+		connectionManager: uiscreen.NewConnectionManager(a),
 	}
 
 	// Set initial theme
