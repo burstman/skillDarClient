@@ -5,6 +5,7 @@ package main
 
 import (
 	_ "embed"
+
 	"fyne.io/fyne/v2"
 )
 
@@ -22,10 +23,17 @@ var resourceHomeCleaningPng = &fyne.StaticResource{
 	StaticContent: resourceHomeCleaningPngData,
 }
 
-//go:embed assets/SkillDarLogo.png
+//go:embed assets/SkillDarLogoInCercle.png
+var resourceSkillDarLogoInCerclePngData []byte
+var resourceSkillDarLogoInCerclePng = &fyne.StaticResource{
+	StaticName:    "assets/SkillDarLogoInCercle.png",
+	StaticContent: resourceSkillDarLogoInCerclePngData,
+}
+
+//go:embed assets/skillDarLogo.png
 var resourceSkillDarLogoPngData []byte
 var resourceSkillDarLogoPng = &fyne.StaticResource{
-	StaticName:    "assets/SkillDarLogo.png",
+	StaticName:    "assets/skillDarLogo.png",
 	StaticContent: resourceSkillDarLogoPngData,
 }
 

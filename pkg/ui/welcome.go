@@ -11,39 +11,51 @@ import (
 // CreateWelcomeScreen creates the welcome screen UI
 // onGetStarted is a callback function that runs when "Get Started" button is clicked
 func CreateWelcomeScreen(state AppState) fyne.CanvasObject {
-	// UI elements
-	title := widget.NewLabel("Welcome to SkillDar")
+	// Top centered logo
+	topLogo := canvas.NewImageFromResource(state.GetImage("logoImage"))
+	topLogo.FillMode = canvas.ImageFillContain
+	topLogo.SetMinSize(fyne.NewSize(120, 40))
+
+	// Header with centered logo
+	header := container.NewCenter(topLogo)
+
+	// Welcome text
+	title := canvas.NewText("Welcome to SkillDar", nil)
 	title.Alignment = fyne.TextAlignCenter
+	title.TextSize = 24
 	title.TextStyle = fyne.TextStyle{Bold: true}
 
-	subtitle := widget.NewLabel("Your Home, Our Expertise")
+	subtitle := canvas.NewText("Your Home, Our Expertise", nil)
 	subtitle.Alignment = fyne.TextAlignCenter
+	subtitle.TextSize = 14
 
+	// Center logo with circles (using the pre-made image)
+	centerLogoWithCircles := canvas.NewImageFromResource(state.GetImage("logoInCircle"))
+	centerLogoWithCircles.FillMode = canvas.ImageFillContain
+	centerLogoWithCircles.SetMinSize(fyne.NewSize(200, 200))
+
+	circleContainer := container.NewCenter(centerLogoWithCircles)
+
+	// Get Started button
 	getStartedBtn := widget.NewButton("Get Started", func() {
 		state.ShowScreen("login")
 	})
-
 	getStartedBtn.Importance = widget.HighImportance
 
-	//sigle image
-
-	logoImage := canvas.NewImageFromResource(state.GetImage("logoImage"))
-	logoImage.FillMode = canvas.ImageFillContain
-	logoImage.SetMinSize(fyne.NewSize(270, 200))
-
-	logoContainer := container.NewCenter(logoImage)
-
-	// Layout - vertically stacked with spacers for centering
+	// Main content layout
 	content := container.NewVBox(
-		title,
-		subtitle,
-		logoContainer,
-		//layout.NewSpacer(),
-		getStartedBtn,
+		header,
 		layout.NewSpacer(),
+		container.NewCenter(title),
+		container.NewCenter(subtitle),
+		layout.NewSpacer(),
+		container.NewCenter(circleContainer),
+		layout.NewSpacer(),
+		layout.NewSpacer(),
+		container.NewPadded(getStartedBtn),
 		layout.NewSpacer(),
 	)
 
 	// Return padded content
-	return container.NewPadded(content)
+	return content
 }

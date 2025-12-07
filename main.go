@@ -201,6 +201,7 @@ func initializeIcons() map[string]fyne.Resource {
 		"lightTheme":        resourceActiverPng,    // Light theme = active/on icon
 		"darkTheme":         resourceDeactivatePng, // Dark theme = deactivate/off icon
 		"logoImage":         resourceSkillDarLogoPng,
+		"logoInCircle":      resourceSkillDarLogoInCerclePng,
 		"plumbing":          resourcePlumberIcoPng,
 		"electricity":       resourceElectricienIcoPng,
 		"painting":          resourcePaintingIcoPng,

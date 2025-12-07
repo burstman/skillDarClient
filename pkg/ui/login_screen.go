@@ -5,6 +5,7 @@ import (
 	"net/url"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
@@ -12,19 +13,26 @@ import (
 
 // CreateLoginScreen builds the login/welcome screen
 func CreateLoginScreen(state AppState) fyne.CanvasObject {
-	title := widget.NewLabel("Welcome to SkillKonnect")
+	// Title
+	title := canvas.NewText("Welcome to SkillDar", nil)
 	title.Alignment = fyne.TextAlignCenter
+	title.TextSize = 22
 	title.TextStyle = fyne.TextStyle{Bold: true}
 
-	subtitle := widget.NewLabel("Connect skills, build networks")
+	// Subtitle
+	subtitle := canvas.NewText("Connect skills, build networks", nil)
 	subtitle.Alignment = fyne.TextAlignCenter
+	subtitle.TextSize = 13
 
+	// Email/Username entry
 	emailEntry := widget.NewEntry()
 	emailEntry.SetPlaceHolder("Email or Username")
 
+	// Password entry with eye icon
 	passwordEntry := widget.NewPasswordEntry()
 	passwordEntry.SetPlaceHolder("Password")
 
+	// Login button
 	loginBtn := widget.NewButton("Login", func() {
 		email := emailEntry.Text
 		password := passwordEntry.Text
@@ -54,12 +62,12 @@ func CreateLoginScreen(state AppState) fyne.CanvasObject {
 	})
 	loginBtn.Importance = widget.HighImportance
 
-	// Divider
-	orLabel := widget.NewLabel("────── OR ──────")
-	orLabel.Alignment = fyne.TextAlignCenter
+	// Divider with OR in the middle using ASCII lines
+	orDivider := widget.NewLabel("────────────── OR ──────────────")
+	orDivider.Alignment = fyne.TextAlignCenter
 
 	// Facebook login button
-	facebookBtn := widget.NewButton("Continue with Facebook", func() {
+	facebookBtn := widget.NewButton("  Continue with Facebook", func() {
 		fmt.Println("Opening Facebook OAuth...")
 		// Facebook OAuth URL (replace with your app credentials)
 		clientID := "YOUR_FACEBOOK_APP_ID"
@@ -80,7 +88,7 @@ func CreateLoginScreen(state AppState) fyne.CanvasObject {
 	})
 
 	// Google login button
-	googleBtn := widget.NewButton("Continue with Google", func() {
+	googleBtn := widget.NewButton("  Continue with Google", func() {
 		fmt.Println("Opening Google OAuth...")
 		// Google OAuth URL (replace with your app credentials)
 		clientID := "YOUR_GOOGLE_CLIENT_ID"
@@ -100,18 +108,23 @@ func CreateLoginScreen(state AppState) fyne.CanvasObject {
 		state.ShowScreen("main")
 	})
 
+	// Main content with proper spacing
 	content := container.NewVBox(
 		layout.NewSpacer(),
-		title,
-		subtitle,
+		container.NewCenter(title),
+		container.NewCenter(subtitle),
+		layout.NewSpacer(),
 		emailEntry,
 		passwordEntry,
 		loginBtn,
-		orLabel,
+		layout.NewSpacer(),
+		orDivider,
+		layout.NewSpacer(),
 		facebookBtn,
 		googleBtn,
 		layout.NewSpacer(),
+		layout.NewSpacer(),
 	)
 
-	return container.NewPadded(container.NewCenter(content))
+	return container.NewPadded(content)
 }
