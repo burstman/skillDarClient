@@ -153,47 +153,76 @@ func createClientHomeContent(state AppState) fyne.CanvasObject {
 	separator1 := widget.NewSeparator()
 
 	// Available workers
-	workersLabel := widget.NewLabel("Available Workers Near You (5)")
+	workersLabel := widget.NewLabel("Loading workers...")
 	workersLabel.TextStyle = fyne.TextStyle{Bold: true}
 
-	// Dummy worker data - start with first 5 workers
-	allWorkers := []struct {
-		name       string
-		profession string
-		rating     string
-		distance   string
-		reviews    string
-		price      string
-		available  bool
-	}{
-		{"Mohamed Hassan", "Plumber", "4.9", "0.8 km", "127", "180 TND/hr", true},
-		{"Ahmed El-Sayed", "Electrician", "4.8", "1.2 km", "98", "200 TND/hr", true},
-		{"Hossam Abid", "Painter", "4.5", "2.1 km", "55", "150 TND/hr", false},
-		{"Youssef Mansour", "AC Technician", "4.7", "1.5 km", "89", "190 TND/hr", true},
-		{"Karim Saidi", "Cleaner", "4.6", "0.5 km", "112", "120 TND/hr", true},
-		// Next batch
-		{"Ali Ben Salem", "Plumber", "4.8", "3.2 km", "145", "170 TND/hr", true},
-		{"Sofiane Gharbi", "Electrician", "4.9", "2.8 km", "203", "210 TND/hr", false},
-		{"Mehdi Trabelsi", "Carpenter", "4.7", "1.9 km", "78", "165 TND/hr", true},
-		{"Nabil Chebbi", "Locksmith", "4.6", "2.5 km", "92", "140 TND/hr", true},
-		{"Rami Bouazizi", "Painter", "4.5", "3.0 km", "67", "155 TND/hr", true},
-		// Third batch
-		{"Farid Jelassi", "AC Technician", "4.8", "1.8 km", "134", "195 TND/hr", true},
-		{"Tarek Maatoug", "Plumber", "4.7", "2.2 km", "101", "175 TND/hr", false},
-		{"Walid Hamdi", "Electrician", "4.9", "0.9 km", "187", "205 TND/hr", true},
-		{"Sami Ayari", "Cleaner", "4.6", "1.7 km", "88", "125 TND/hr", true},
-		{"Bassem Jribi", "Carpenter", "4.5", "3.5 km", "72", "160 TND/hr", true},
-	}
-
-	currentDisplayCount := 5
-	isLoading := false
-
-	// Workers container - start with first 5
+	// Workers container
 	workersContainer := container.NewVBox()
-	for i := 0; i < currentDisplayCount && i < len(allWorkers); i++ {
-		w := allWorkers[i]
-		workersContainer.Add(createSimpleWorkerCard(state, w.name, w.profession, w.rating, w.distance, w.reviews, w.price, w.available))
+
+	// Pagination state
+	currentPage := 1
+	pageLimit := 10
+	isLoading := false
+	hasMoreWorkers := true
+
+	// Function to load workers from API
+	loadWorkers := func() {
+		if isLoading || !hasMoreWorkers {
+			return
+		}
+		isLoading = true
+
+		// Run API call in goroutine to avoid blocking
+		go func() {
+			// Get API service
+			apiService := state.GetAPIService()
+
+			// Fetch workers from API
+			workersResp, err := apiService.GetWorkers(currentPage, pageLimit)
+
+			if err != nil {
+				fmt.Println("Failed to load workers:", err)
+				workersLabel.SetText("Failed to load workers")
+				isLoading = false
+				return
+			}
+
+			// Update label with count
+			workersLabel.SetText(fmt.Sprintf("Available Workers Near You (%d)", workersResp.TotalCount))
+
+			// Add worker cards
+			for _, worker := range workersResp.Workers {
+				rating := fmt.Sprintf("%.1f", worker.Rating)
+				reviews := fmt.Sprintf("%d", worker.ReviewCount)
+				price := fmt.Sprintf("%.0f TND/hr", worker.HourlyRate)
+
+				workersContainer.Add(createSimpleWorkerCard(
+					state,
+					worker.Name,
+					worker.Profession,
+					rating,
+					worker.Distance,
+					reviews,
+					price,
+					worker.Available,
+				))
+			}
+
+			workersContainer.Refresh()
+
+			// Check if there are more workers
+			if len(workersResp.Workers) < pageLimit {
+				hasMoreWorkers = false
+			} else {
+				currentPage++
+			}
+
+			isLoading = false
+		}()
 	}
+
+	// Load initial workers
+	loadWorkers()
 
 	// Make workers scrollable with minimum height
 	workersScroll := container.NewVScroll(workersContainer)
@@ -201,30 +230,10 @@ func createClientHomeContent(state AppState) fyne.CanvasObject {
 	workersScroll.OnScrolled = func(pos fyne.Position) {
 		fmt.Printf("Workers scrolled to position: X=%.2f, Y=%.2f\n", pos.X, pos.Y)
 
-		// Check if we're near the bottom (Y position > 40 means scrolled down significantly)
-		if pos.Y > 40 && !isLoading && currentDisplayCount < len(allWorkers) {
-			isLoading = true
+		// Check if we're near the bottom - load more workers
+		if pos.Y > 40 && hasMoreWorkers {
 			fmt.Println(">>> Loading more workers...")
-
-			// Load next 5 workers
-			oldCount := currentDisplayCount
-			currentDisplayCount += 5
-			if currentDisplayCount > len(allWorkers) {
-				currentDisplayCount = len(allWorkers)
-			}
-
-			// Add new workers to container
-			for i := oldCount; i < currentDisplayCount; i++ {
-				w := allWorkers[i]
-				workersContainer.Add(createSimpleWorkerCard(state, w.name, w.profession, w.rating, w.distance, w.reviews, w.price, w.available))
-			}
-
-			// Update label
-			workersLabel.SetText(fmt.Sprintf("Available Workers Near You (%d)", currentDisplayCount))
-			workersContainer.Refresh()
-
-			fmt.Printf(">>> Loaded %d more workers. Total: %d\n", currentDisplayCount-oldCount, currentDisplayCount)
-			isLoading = false
+			loadWorkers()
 		}
 	}
 

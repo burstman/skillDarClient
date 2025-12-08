@@ -16,8 +16,8 @@ func CreateWelcomeScreen(state AppState) fyne.CanvasObject {
 	topLogo.FillMode = canvas.ImageFillContain
 	topLogo.SetMinSize(fyne.NewSize(120, 40))
 
-	// Header with centered logo
-	header := container.NewCenter(topLogo)
+	// // Header with centered logo
+	// header := container.NewCenter(topLogo)
 
 	// Welcome text
 	title := canvas.NewText("Welcome to SkillDar", nil)
@@ -44,7 +44,7 @@ func CreateWelcomeScreen(state AppState) fyne.CanvasObject {
 
 	// Main content layout
 	content := container.NewVBox(
-		header,
+		//header,
 		layout.NewSpacer(),
 		container.NewCenter(title),
 		container.NewCenter(subtitle),

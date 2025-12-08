@@ -18,4 +18,6 @@ type AppState interface {
 	IsDarkTheme() bool
 	ShowConnectionError(status ConnectionStatus, message string)
 	HideConnectionError()
+	GetAPIService() *APIService
+	GetPreferences() *PreferencesManager
 }

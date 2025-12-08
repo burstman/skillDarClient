@@ -32,33 +32,50 @@ func CreateLoginScreen(state AppState) fyne.CanvasObject {
 	passwordEntry := widget.NewPasswordEntry()
 	passwordEntry.SetPlaceHolder("Password")
 
-	// Login button
-	loginBtn := widget.NewButton("Login", func() {
+	// Login button (define variable first for reference in callback)
+	var loginBtn *widget.Button
+	loginBtn = widget.NewButton("Login", func() {
 		email := emailEntry.Text
 		password := passwordEntry.Text
 		if email == "" || password == "" {
 			fmt.Println("Please fill in all fields")
 			state.ShowConnectionError(StatusNoInternet, "Please fill in all fields")
-		} else {
-			// Simulate API call - check connection first
-			apiConfig := DefaultAPIConfig()
+			return
+		}
 
-			// Example: Check connection before login
-			isConnected, status, message := CheckConnection(apiConfig)
+		// Disable button during login
+		loginBtn.Disable()
 
-			if !isConnected {
-				// Show connection error
-				state.ShowConnectionError(status, message)
+		// Call API in goroutine to avoid blocking
+		go func() {
+			defer loginBtn.Enable()
+
+			// Call real API
+			apiService := state.GetAPIService()
+			loginResp, err := apiService.Login(email, password)
+
+			if err != nil {
+				fmt.Println("Login failed:", err)
+				state.ShowConnectionError(StatusServerDown, "Login failed: "+err.Error())
 				return
 			}
 
-			// Simulate successful login
-			fmt.Println("Logged in as:", email)
+			// Save auth data
+			prefs := state.GetPreferences()
+			prefs.SetAuthToken(loginResp.Token)
+			prefs.SetEmail(loginResp.User.Email)
+			prefs.SetUsername(loginResp.User.Username)
+			prefs.SetUserID(loginResp.User.ID)
+
+			// Set token in API service
+			apiService.SetToken(loginResp.Token)
+
+			fmt.Println("Login successful! Token saved.")
 			state.HideConnectionError()
 
 			// Navigate to main screen
 			state.ShowScreen("main")
-		}
+		}()
 	})
 	loginBtn.Importance = widget.HighImportance
 

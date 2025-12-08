@@ -10,7 +10,8 @@ help:
 	@echo ""
 	@echo "Install Commands:"
 	@echo "  make install-android     - Build and install APK on connected device"
-	@echo "  make push-apk           - Push APK to device Downloads folder"
+	@echo "  make quick-push          - Install existing APK (no rebuild - FAST!)"
+	@echo "  make push-apk            - Push APK to device Downloads folder"
 	@echo ""
 	@echo "Development Commands:"
 	@echo "  make run                - Run the app locally"
@@ -35,6 +36,18 @@ build-android:
 build-android-all:
 	@echo "Building Android APK (all architectures)..."
 	fyne-cross android --app-id $(APP_ID) --icon $(APP_ICON) -debug
+
+# Quick push - use existing APK without rebuilding
+quick-push:
+	@echo "Pushing existing APK to device..."
+	@if [ ! -f $(APK_PATH) ]; then \
+		echo "Error: APK not found. Run 'make build-android' first."; \
+		exit 1; \
+	fi
+	adb push $(APK_PATH) $(DEVICE_APK_PATH)
+	@echo "Installing APK on device..."
+	adb shell pm install -r $(DEVICE_APK_PATH)
+	@echo "Installation complete!"
 
 # Push APK to device /data/local/tmp (system accessible)
 push-apk: build-android

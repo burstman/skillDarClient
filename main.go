@@ -20,6 +20,8 @@ type AppState struct {
 	app               fyne.App
 	window            fyne.Window
 	isDarkTheme       bool
+	preferences       *uiscreen.PreferencesManager // Preferences manager
+	apiService        *uiscreen.APIService         // API service
 	screens           map[string]fyne.CanvasObject
 	icons             map[string]fyne.Resource    // Map of all app icons
 	userRole          string                      // "client" or "worker"
@@ -147,6 +149,13 @@ func (as *AppState) ToggleTheme() {
 	as.isDarkTheme = !as.isDarkTheme
 	fmt.Println("Theme toggled. isDarkTheme:", as.isDarkTheme)
 
+	// Save theme preference
+	if as.isDarkTheme {
+		as.preferences.SetTheme("dark")
+	} else {
+		as.preferences.SetTheme("light")
+	}
+
 	variant := theme.VariantLight
 	if as.isDarkTheme {
 		variant = theme.VariantDark
@@ -176,6 +185,7 @@ func (as *AppState) GetImage(name string) fyne.Resource {
 // SetUserRole sets the user role (client or worker)
 func (as *AppState) SetUserRole(role string) {
 	as.userRole = role
+	as.preferences.SetUserRole(role) // Save to preferences
 	fmt.Println("User role set to:", role)
 }
 
@@ -193,6 +203,16 @@ func (as *AppState) ShowConnectionError(status uiscreen.ConnectionStatus, messag
 // HideConnectionError hides the connection error notification
 func (as *AppState) HideConnectionError() {
 	as.connectionManager.HideNotification()
+}
+
+// GetAPIService returns the API service
+func (as *AppState) GetAPIService() *uiscreen.APIService {
+	return as.apiService
+}
+
+// GetPreferences returns the preferences manager
+func (as *AppState) GetPreferences() *uiscreen.PreferencesManager {
+	return as.preferences
 }
 
 // initializeIcons creates and returns the map of all app icons
@@ -216,25 +236,41 @@ func initializeIcons() map[string]fyne.Resource {
 }
 
 func main() {
-	// Create the app
-	a := app.New()
+	// Create the app with unique ID for preferences
+	a := app.NewWithID("com.skilldar.client")
 	w := a.NewWindow("SkillDar")
 	w.SetMaster()
 	w.Resize(fyne.NewSize(390, 844)) // iPhone 12/13 size
+
+	// Initialize preferences manager
+	prefManager := uiscreen.NewPreferencesManager(a)
+
+	// Initialize API service
+	apiService := uiscreen.NewAPIService()
+	// Set token if user is logged in
+	if prefManager.IsLoggedIn() {
+		apiService.SetToken(prefManager.GetAuthToken())
+	}
 
 	// Initialize app state
 	state := &AppState{
 		app:               a,
 		window:            w,
-		isDarkTheme:       false, // Start with LIGHT theme
+		isDarkTheme:       prefManager.IsDarkTheme(), // Load theme preference
+		preferences:       prefManager,
+		apiService:        apiService,
 		screens:           make(map[string]fyne.CanvasObject),
 		icons:             initializeIcons(),
-		userRole:          "client", // Default to client role
+		userRole:          prefManager.GetUserRole(), // Load user role preference
 		connectionManager: uiscreen.NewConnectionManager(a),
 	}
 
-	// Set initial theme
-	a.Settings().SetTheme(skilltheme.NewSkillKonnectTheme(theme.VariantLight))
+	// Set initial theme based on saved preference
+	variant := theme.VariantLight
+	if state.isDarkTheme {
+		variant = theme.VariantDark
+	}
+	a.Settings().SetTheme(skilltheme.NewSkillKonnectTheme(variant))
 
 	// Register screens
 	state.screens["welcome"] = uiscreen.CreateWelcomeScreen(state)
@@ -243,8 +279,15 @@ func main() {
 	state.screens["profile"] = uiscreen.CreateProfileScreen(state)
 	state.screens["edit_profile_client"] = uiscreen.CreateEditProfileClientScreen(state)
 
-	// Show welcome screen first
-	state.ShowScreen("welcome")
+	// Check if user is already logged in
+	if prefManager.IsLoggedIn() {
+		// User has a token, go directly to main screen
+		fmt.Println("User already logged in, showing main screen")
+		state.ShowScreen("main")
+	} else {
+		// Show welcome screen first
+		state.ShowScreen("welcome")
+	}
 
 	// Make sure window is visible
 	w.Show()
