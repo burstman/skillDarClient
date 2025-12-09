@@ -25,19 +25,19 @@ func CreateEditProfileClientScreen(state AppState) fyne.CanvasObject {
 	// Form fields
 	nameEntry := widget.NewEntry()
 	nameEntry.SetPlaceHolder("Full Name")
-	nameEntry.SetText("John Doe") // Pre-filled example
+	nameEntry.SetText("") // Fix Android bug - removed pre-filled example
 
 	emailEntry := widget.NewEntry()
 	emailEntry.SetPlaceHolder("Email")
-	emailEntry.SetText("john@example.com")
+	emailEntry.SetText("") // Fix Android bug
 
 	phoneEntry := widget.NewEntry()
 	phoneEntry.SetPlaceHolder("Phone Number")
-	phoneEntry.SetText("+2164567890")
+	phoneEntry.SetText("") // Fix Android bug
 
 	locationEntry := widget.NewEntry()
 	locationEntry.SetPlaceHolder("Location/Address")
-	locationEntry.SetText("New York, USA")
+	locationEntry.SetText("") // Fix Android bug
 
 	bioEntry := widget.NewMultiLineEntry()
 	bioEntry.SetPlaceHolder("Tell us about yourself...")

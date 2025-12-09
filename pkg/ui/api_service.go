@@ -27,7 +27,7 @@ type LoginResponse struct {
 
 // UserProfile represents user information
 type UserProfile struct {
-	ID       string `json:"id"`
+	ID       int    `json:"id"`
 	Email    string `json:"email"`
 	Username string `json:"username"`
 	Name     string `json:"name"`
@@ -43,25 +43,22 @@ type DashboardResponse struct {
 
 // Worker represents a worker from the API
 type Worker struct {
-	ID          string   `json:"id"`
-	Name        string   `json:"name"`
-	Profession  string   `json:"profession"`
-	Rating      float64  `json:"rating"`
-	ReviewCount int      `json:"reviewCount"`
-	Distance    string   `json:"distance"`
-	HourlyRate  float64  `json:"hourlyRate"`
-	Available   bool     `json:"available"`
-	Skills      []string `json:"skills"`
-	Avatar      string   `json:"avatar"`
+	ID         int     `json:"id"`
+	Name       string  `json:"name"`
+	Profession string  `json:"profession"`
+	Rating     float64 `json:"rating"`
+	Reviews    int     `json:"reviews"`
+	Distance   string  `json:"distance"`
+	Price      string  `json:"price"`
+	Available  bool    `json:"available"`
 }
 
 // WorkersResponse represents the workers list response
 type WorkersResponse struct {
-	Workers    []Worker `json:"workers"`
-	TotalCount int      `json:"totalCount"`
-	Page       int      `json:"page"`
-	Limit      int      `json:"limit"`
-	Message    string   `json:"message"`
+	Workers []Worker `json:"workers"`
+	Total   int      `json:"total"`
+	Page    int      `json:"page"`
+	Limit   int      `json:"limit"`
 }
 
 // APIService handles all API calls
@@ -127,6 +124,11 @@ func (api *APIService) Login(email, password string) (*LoginResponse, error) {
 
 // GetDashboard fetches dashboard data
 func (api *APIService) GetDashboard() (*DashboardResponse, error) {
+	// Validate token exists
+	if api.token == "" {
+		return nil, fmt.Errorf("no authentication token available")
+	}
+
 	req, err := http.NewRequest("GET", api.baseURL+"/client/dashboard", nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
@@ -134,7 +136,12 @@ func (api *APIService) GetDashboard() (*DashboardResponse, error) {
 
 	req.Header.Set("Authorization", "Bearer "+api.token)
 
-	client := &http.Client{}
+	// Prevent following redirects
+	client := &http.Client{
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to make request: %w", err)
@@ -160,6 +167,11 @@ func (api *APIService) GetDashboard() (*DashboardResponse, error) {
 
 // GetWorkers fetches workers list with pagination
 func (api *APIService) GetWorkers(page, limit int) (*WorkersResponse, error) {
+	// Validate token exists
+	if api.token == "" {
+		return nil, fmt.Errorf("no authentication token available")
+	}
+
 	url := fmt.Sprintf("%s/client/workers?page=%d&limit=%d", api.baseURL, page, limit)
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -169,7 +181,12 @@ func (api *APIService) GetWorkers(page, limit int) (*WorkersResponse, error) {
 
 	req.Header.Set("Authorization", "Bearer "+api.token)
 
-	client := &http.Client{}
+	// Prevent following redirects
+	client := &http.Client{
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to make request: %w", err)

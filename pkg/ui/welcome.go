@@ -38,7 +38,14 @@ func CreateWelcomeScreen(state AppState) fyne.CanvasObject {
 
 	// Get Started button
 	getStartedBtn := widget.NewButton("Get Started", func() {
-		state.ShowScreen("login")
+		// Check if user is already authenticated
+		if state.GetPreferences().IsLoggedIn() {
+			// User has token, skip login and go to main screen
+			state.ShowScreen("main")
+		} else {
+			// No token, show login screen
+			state.ShowScreen("login")
+		}
 	})
 	getStartedBtn.Importance = widget.HighImportance
 

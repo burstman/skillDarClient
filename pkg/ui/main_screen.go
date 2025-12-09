@@ -112,6 +112,7 @@ func createClientHomeContent(state AppState) fyne.CanvasObject {
 	// Search bar
 	searchEntry := widget.NewEntry()
 	searchEntry.SetPlaceHolder("Search for workers...")
+	searchEntry.SetText("") // Fix Android bug with first character
 	searchEntry.OnChanged = func(searchText string) {
 		fmt.Println("Search text changed:", searchText)
 		// TODO: Implement search filtering
@@ -180,51 +181,52 @@ func createClientHomeContent(state AppState) fyne.CanvasObject {
 			// Fetch workers from API
 			workersResp, err := apiService.GetWorkers(currentPage, pageLimit)
 
-			if err != nil {
-				fmt.Println("Failed to load workers:", err)
-				workersLabel.SetText("Failed to load workers")
+			// All UI updates must be in fyne.Do()
+			fyne.Do(func() {
+				if err != nil {
+					fmt.Println("Failed to load workers:", err)
+					workersLabel.SetText("Failed to load workers")
+					isLoading = false
+					return
+				}
+
+				// Update label with count
+				workersLabel.SetText(fmt.Sprintf("Available Workers Near You (%d)", workersResp.Total))
+
+				// Add worker cards
+				for _, worker := range workersResp.Workers {
+					rating := fmt.Sprintf("%.1f", worker.Rating)
+					reviews := fmt.Sprintf("%d", worker.Reviews)
+					// Price comes as string from API, use it directly
+					price := worker.Price
+
+					workersContainer.Add(createSimpleWorkerCard(
+						state,
+						worker.Name,
+						worker.Profession,
+						rating,
+						worker.Distance,
+						reviews,
+						price,
+						worker.Available,
+					))
+				}
+
+				workersContainer.Refresh()
+
+				// Check if there are more workers
+				if len(workersResp.Workers) < pageLimit {
+					hasMoreWorkers = false
+				} else {
+					currentPage++
+				}
+
 				isLoading = false
-				return
-			}
-
-			// Update label with count
-			workersLabel.SetText(fmt.Sprintf("Available Workers Near You (%d)", workersResp.TotalCount))
-
-			// Add worker cards
-			for _, worker := range workersResp.Workers {
-				rating := fmt.Sprintf("%.1f", worker.Rating)
-				reviews := fmt.Sprintf("%d", worker.ReviewCount)
-				price := fmt.Sprintf("%.0f TND/hr", worker.HourlyRate)
-
-				workersContainer.Add(createSimpleWorkerCard(
-					state,
-					worker.Name,
-					worker.Profession,
-					rating,
-					worker.Distance,
-					reviews,
-					price,
-					worker.Available,
-				))
-			}
-
-			workersContainer.Refresh()
-
-			// Check if there are more workers
-			if len(workersResp.Workers) < pageLimit {
-				hasMoreWorkers = false
-			} else {
-				currentPage++
-			}
-
-			isLoading = false
+			})
 		}()
 	}
-
 	// Load initial workers
-	loadWorkers()
-
-	// Make workers scrollable with minimum height
+	loadWorkers() // Make workers scrollable with minimum height
 	workersScroll := container.NewVScroll(workersContainer)
 	workersScroll.SetMinSize(fyne.NewSize(400, 300)) // Give workers section proper height
 	workersScroll.OnScrolled = func(pos fyne.Position) {
@@ -353,7 +355,18 @@ func createProfileContent(state AppState) fyne.CanvasObject {
 	helpBtn.Alignment = widget.ButtonAlignLeading
 
 	logoutBtn := widget.NewButton("Logout", func() {
-		fmt.Println("Logout clicked")
+		// Clear authentication data
+		prefs := state.GetPreferences()
+		prefs.ClearAuthData()
+
+		// Clear API service token
+		apiService := state.GetAPIService()
+		apiService.SetToken("")
+
+		fmt.Println("User logged out")
+
+		// Navigate to welcome screen
+		state.ShowScreen("welcome")
 	})
 	logoutBtn.Importance = widget.DangerImportance
 	logoutBtn.Alignment = widget.ButtonAlignLeading

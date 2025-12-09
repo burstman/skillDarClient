@@ -125,23 +125,25 @@ func NewConnectionManager(app fyne.App) *ConnectionManager {
 
 // ShowNotification displays a connection status notification
 func (cm *ConnectionManager) ShowNotification(status ConnectionStatus, message string, duration time.Duration) {
-	// Create notification with dismiss callback
-	dismissFunc := func() {
-		cm.HideNotification()
-	}
+	fyne.Do(func() {
+		// Create notification with dismiss callback
+		dismissFunc := func() {
+			cm.HideNotification()
+		}
 
-	if cm.notification == nil {
-		cm.notification = NewConnectionNotification(cm.app, status, message, dismissFunc)
-	} else {
-		cm.notification.onDismiss = dismissFunc
-		cm.notification.SetStatus(status, message)
-	}
+		if cm.notification == nil {
+			cm.notification = NewConnectionNotification(cm.app, status, message, dismissFunc)
+		} else {
+			cm.notification.onDismiss = dismissFunc
+			cm.notification.SetStatus(status, message)
+		}
 
-	if !cm.isShowing {
-		cm.container.Objects = []fyne.CanvasObject{cm.notification}
-		cm.container.Refresh()
-		cm.isShowing = true
-	}
+		if !cm.isShowing {
+			cm.container.Objects = []fyne.CanvasObject{cm.notification}
+			cm.container.Refresh()
+			cm.isShowing = true
+		}
+	})
 
 	// Note: Auto-dismiss removed to avoid threading issues
 	// User must click the notification to dismiss it
@@ -149,9 +151,11 @@ func (cm *ConnectionManager) ShowNotification(status ConnectionStatus, message s
 
 // HideNotification hides the current notification
 func (cm *ConnectionManager) HideNotification() {
-	cm.container.Objects = []fyne.CanvasObject{}
-	cm.container.Refresh()
-	cm.isShowing = false
+	fyne.Do(func() {
+		cm.container.Objects = []fyne.CanvasObject{}
+		cm.container.Refresh()
+		cm.isShowing = false
+	})
 }
 
 // GetContainer returns the notification container to be added to the UI

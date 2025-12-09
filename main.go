@@ -279,15 +279,8 @@ func main() {
 	state.screens["profile"] = uiscreen.CreateProfileScreen(state)
 	state.screens["edit_profile_client"] = uiscreen.CreateEditProfileClientScreen(state)
 
-	// Check if user is already logged in
-	if prefManager.IsLoggedIn() {
-		// User has a token, go directly to main screen
-		fmt.Println("User already logged in, showing main screen")
-		state.ShowScreen("main")
-	} else {
-		// Show welcome screen first
-		state.ShowScreen("welcome")
-	}
+	// Always show welcome screen first
+	state.ShowScreen("welcome")
 
 	// Make sure window is visible
 	w.Show()

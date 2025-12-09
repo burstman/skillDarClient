@@ -59,12 +59,12 @@ func (pm *PreferencesManager) SetUserRole(role string) {
 }
 
 // User authentication preferences
-func (pm *PreferencesManager) GetUserID() string {
-	return pm.prefs.String(PrefKeyUserID)
+func (pm *PreferencesManager) GetUserID() int {
+	return pm.prefs.Int(PrefKeyUserID)
 }
 
-func (pm *PreferencesManager) SetUserID(id string) {
-	pm.prefs.SetString(PrefKeyUserID, id)
+func (pm *PreferencesManager) SetUserID(id int) {
+	pm.prefs.SetInt(PrefKeyUserID, id)
 }
 
 func (pm *PreferencesManager) GetUsername() string {

@@ -48,33 +48,36 @@ func CreateLoginScreen(state AppState) fyne.CanvasObject {
 
 		// Call API in goroutine to avoid blocking
 		go func() {
-			defer loginBtn.Enable()
-
 			// Call real API
 			apiService := state.GetAPIService()
 			loginResp, err := apiService.Login(email, password)
 
-			if err != nil {
-				fmt.Println("Login failed:", err)
-				state.ShowConnectionError(StatusServerDown, "Login failed: "+err.Error())
-				return
-			}
+			// All UI updates must be wrapped in fyne.Do()
+			fyne.Do(func() {
+				defer loginBtn.Enable()
 
-			// Save auth data
-			prefs := state.GetPreferences()
-			prefs.SetAuthToken(loginResp.Token)
-			prefs.SetEmail(loginResp.User.Email)
-			prefs.SetUsername(loginResp.User.Username)
-			prefs.SetUserID(loginResp.User.ID)
+				if err != nil {
+					fmt.Println("Login failed:", err)
+					state.ShowConnectionError(StatusServerDown, "Login failed: "+err.Error())
+					return
+				}
 
-			// Set token in API service
-			apiService.SetToken(loginResp.Token)
+				// Save auth data
+				prefs := state.GetPreferences()
+				prefs.SetAuthToken(loginResp.Token)
+				prefs.SetEmail(loginResp.User.Email)
+				prefs.SetUsername(loginResp.User.Username)
+				prefs.SetUserID(loginResp.User.ID)
 
-			fmt.Println("Login successful! Token saved.")
-			state.HideConnectionError()
+				// Set token in API service
+				apiService.SetToken(loginResp.Token)
 
-			// Navigate to main screen
-			state.ShowScreen("main")
+				fmt.Println("Login successful! Token saved.")
+				state.HideConnectionError()
+
+				// Navigate to main screen
+				state.ShowScreen("main")
+			})
 		}()
 	})
 	loginBtn.Importance = widget.HighImportance
