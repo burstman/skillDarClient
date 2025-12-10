@@ -1,4 +1,4 @@
-.PHONY: help build-android build-android-all install-android push-apk clean-android run test
+.PHONY: help build-android build-android-all install-android push-apk clean-android run test logs
 
 # Default target
 help:
@@ -13,6 +13,9 @@ help:
 	@echo "  make quick-push          - Install existing APK (no rebuild - FAST!)"
 	@echo "  make push-apk            - Push APK to device Downloads folder"
 	@echo ""
+	@echo "Debug Commands:"
+	@echo "  make logs                - Show worker loading logs from Android device"
+	@echo ""
 	@echo "Development Commands:"
 	@echo "  make run                - Run the app locally"
 	@echo "  make test               - Run tests"
@@ -24,18 +27,20 @@ help:
 # App configuration
 APP_ID := com.skilldar.client
 APP_ICON := Icon.png
-APK_PATH := fyne-cross/dist/android-arm64/skillDarClient.apk
-DEVICE_APK_PATH := /data/local/tmp/skillDarClient.apk
+APK_PATH := skillDar.apk
+DEVICE_APK_PATH := /data/local/tmp/skillDar.apk
 
 # Build Android APK (ARM64 only - faster, works on most devices)
 build-android:
-	@echo "Building Android APK (ARM64)..."
-	fyne-cross android -arch=arm64 --app-id $(APP_ID) --icon $(APP_ICON) -debug
+	@echo "Building Android APK with fyne package..."
+	fyne package -os android --app-id $(APP_ID) --icon $(APP_ICON)
+	@echo "Build complete! APK: $(APK_PATH)"
 
 # Build Android APK for all architectures (ARM64, ARM, AMD64, 386)
 build-android-all:
-	@echo "Building Android APK (all architectures)..."
-	fyne-cross android --app-id $(APP_ID) --icon $(APP_ICON) -debug
+	@echo "Building Android APK with fyne package..."
+	fyne package -os android -appID $(APP_ID) -icon $(APP_ICON)
+	@echo "Build complete! APK: $(APK_PATH)"
 
 # Quick push - use existing APK without rebuilding
 quick-push:
@@ -88,9 +93,8 @@ test:
 # Clean Android build artifacts
 clean-android:
 	@echo "Cleaning Android build artifacts..."
-	rm -rf fyne-cross/bin/android*
-	rm -rf fyne-cross/dist/android*
-	rm -rf fyne-cross/tmp/android*
+	rm -f $(APK_PATH)
+	rm -rf fyne-cross/
 	@echo "Clean complete!"
 
 # Clean all build artifacts
@@ -124,3 +128,9 @@ device-info: check-device
 	@echo "Android Version: $$(adb shell getprop ro.build.version.release)"
 	@echo "SDK Version: $$(adb shell getprop ro.build.version.sdk)"
 	@echo "Architecture: $$(adb shell getprop ro.product.cpu.abi)"
+
+# Show worker loading logs from Android device
+logs:
+	@echo "Showing worker loading logs (Press Ctrl+C to stop)..."
+	@echo "---------------------------------------------------"
+	adb logcat | grep -E "Loading workers|GetWorkers|Failed to load|Successfully loaded"

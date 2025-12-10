@@ -167,12 +167,24 @@ func (api *APIService) GetDashboard() (*DashboardResponse, error) {
 
 // GetWorkers fetches workers list with pagination
 func (api *APIService) GetWorkers(page, limit int) (*WorkersResponse, error) {
+	return api.GetWorkersByCategory(page, limit, "")
+}
+
+// GetWorkersByCategory fetches workers list with pagination and optional category filter
+func (api *APIService) GetWorkersByCategory(page, limit int, category string) (*WorkersResponse, error) {
 	// Validate token exists
 	if api.token == "" {
+		fmt.Println("GetWorkers: No authentication token available")
 		return nil, fmt.Errorf("no authentication token available")
 	}
 
+	fmt.Printf("GetWorkers: Using token (first 20 chars): %s...\n", api.token[:min(20, len(api.token))])
+
 	url := fmt.Sprintf("%s/client/workers?page=%d&limit=%d", api.baseURL, page, limit)
+	if category != "" {
+		url += fmt.Sprintf("&category=%s", category)
+		fmt.Printf("Filtering workers by category: %s\n", category)
+	}
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
