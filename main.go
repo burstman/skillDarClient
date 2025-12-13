@@ -215,6 +215,11 @@ func (as *AppState) GetPreferences() *uiscreen.PreferencesManager {
 	return as.preferences
 }
 
+// GetWindow returns the main window
+func (as *AppState) GetWindow() fyne.Window {
+	return as.window
+}
+
 // initializeIcons creates and returns the map of all app icons
 func initializeIcons() map[string]fyne.Resource {
 	return map[string]fyne.Resource{

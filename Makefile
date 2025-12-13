@@ -129,8 +129,8 @@ device-info: check-device
 	@echo "SDK Version: $$(adb shell getprop ro.build.version.sdk)"
 	@echo "Architecture: $$(adb shell getprop ro.product.cpu.abi)"
 
-# Show worker loading logs from Android device
+# Show worker loading and map logs from Android device
 logs:
-	@echo "Showing worker loading logs (Press Ctrl+C to stop)..."
+	@echo "Showing app logs (Press Ctrl+C to stop)..."
 	@echo "---------------------------------------------------"
-	adb logcat | grep -E "Loading workers|GetWorkers|Failed to load|Successfully loaded"
+	adb logcat | grep -E "Loading workers|GetWorkers|Failed to load|Successfully loaded|Map|map widget|map area|Creating map|Map configured|Map spacer|Map container|tap"

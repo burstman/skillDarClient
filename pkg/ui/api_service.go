@@ -211,7 +211,8 @@ func (api *APIService) GetWorkersByCategory(page, limit int, category string) (*
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("workers request failed: %s", string(body))
+		fmt.Printf("API Error - Status Code: %d, Response: %s\n", resp.StatusCode, string(body))
+		return nil, fmt.Errorf("workers request failed with status %d: %s", resp.StatusCode, string(body))
 	}
 
 	var workersResp WorkersResponse

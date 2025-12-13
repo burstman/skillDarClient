@@ -4,7 +4,7 @@ go 1.24.3
 
 require (
 	fyne.io/fyne/v2 v2.7.1
-	fyne.io/x/fyne v0.0.0-20250910205345-ecc79984d005
+	fyne.io/x/fyne v0.0.0-20251212103855-2e95dd55c51e
 )
 
 require (
@@ -40,3 +40,5 @@ require (
 	golang.org/x/text v0.22.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace fyne.io/x/fyne => github.com/burstman/fyne-x v0.0.0-20251212103855-2e95dd55c51e

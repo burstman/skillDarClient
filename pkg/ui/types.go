@@ -20,4 +20,5 @@ type AppState interface {
 	HideConnectionError()
 	GetAPIService() *APIService
 	GetPreferences() *PreferencesManager
+	GetWindow() fyne.Window
 }
